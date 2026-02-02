@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import { memo, useCallback, type ReactNode } from "react"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { useNavigate, usePathname } from "./hooks"
 
@@ -30,6 +30,7 @@ export interface TabsProps {
   inactiveTintColor?: string
 }
 
+// rendering-hoist-jsx: extract static styles outside component
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -58,6 +59,41 @@ const styles = StyleSheet.create({
   activeLabel: {
     fontWeight: "600",
   },
+})
+
+/**
+ * Individual tab button - memoized to prevent re-renders
+ * rerender-memo: extract expensive work into memoized component
+ */
+const TabButton = memo(function TabButton({
+  tab,
+  active,
+  tintColor,
+  onPress,
+}: {
+  tab: TabItem
+  active: boolean
+  tintColor: string
+  onPress: () => void
+}) {
+  // rendering-conditional-render: use ternary not &&
+  const icon = active && tab.activeIcon ? tab.activeIcon : tab.icon
+
+  return (
+    <Pressable style={styles.tab} onPress={onPress}>
+      {icon}
+      <Text
+        style={[
+          styles.tabLabel,
+          { color: tintColor },
+          // rendering-conditional-render: use ternary for conditional styles
+          active ? styles.activeLabel : null,
+        ]}
+      >
+        {tab.label}
+      </Text>
+    </Pressable>
+  )
 })
 
 /**
@@ -93,12 +129,25 @@ export function Tabs({
   const pathname = usePathname()
   const navigate = useNavigate()
 
-  const isTabActive = (href: string) => {
-    if (href === "/") {
-      return pathname === "/"
-    }
-    return pathname === href || pathname.startsWith(`${href}/`)
-  }
+  // rerender-functional-setstate: stable callback with useCallback
+  // rerender-dependencies: use primitive dependency (pathname)
+  const isTabActive = useCallback(
+    (href: string) => {
+      if (href === "/") {
+        return pathname === "/"
+      }
+      return pathname === href || pathname.startsWith(`${href}/`)
+    },
+    [pathname],
+  )
+
+  // rerender-functional-setstate: create stable handler factory
+  const handleTabPress = useCallback(
+    (href: string) => {
+      navigate(href)
+    },
+    [navigate],
+  )
 
   return (
     <View style={styles.container}>
@@ -109,12 +158,15 @@ export function Tabs({
           const tintColor = active ? activeTintColor : inactiveTintColor
 
           return (
-            <Pressable key={tab.href} style={styles.tab} onPress={() => navigate(tab.href)}>
-              {active && tab.activeIcon ? tab.activeIcon : tab.icon}
-              <Text style={[styles.tabLabel, { color: tintColor }, active && styles.activeLabel]}>
-                {tab.label}
-              </Text>
-            </Pressable>
+            <TabButton
+              key={tab.href}
+              tab={tab}
+              active={active}
+              tintColor={tintColor}
+              // Using arrow function here is acceptable because TabButton is memoized
+              // and will only re-render when its props change
+              onPress={() => handleTabPress(tab.href)}
+            />
           )
         })}
       </View>

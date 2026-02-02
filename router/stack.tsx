@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import { memo, useCallback, type ReactNode } from "react"
 import { Pressable, StyleSheet, Text, View } from "react-native"
 import { useRouter } from "./hooks"
 
@@ -44,6 +44,7 @@ export interface StackScreenProps {
   options?: StackScreenOptions
 }
 
+// rendering-hoist-jsx: extract static styles outside component
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -93,10 +94,14 @@ const styles = StyleSheet.create({
   },
 })
 
+// rerender-memo-with-default-value: hoist default non-primitive prop
+const DEFAULT_SCREEN_OPTIONS: StackScreenOptions = {}
+
 /**
  * Default back button component
+ * rerender-memo: memoized to prevent re-renders
  */
-function DefaultBackButton({
+const DefaultBackButton = memo(function DefaultBackButton({
   tintColor = "#007AFF",
   onPress,
 }: {
@@ -109,7 +114,7 @@ function DefaultBackButton({
       <Text style={[styles.backButtonText, { color: tintColor }]}>Back</Text>
     </Pressable>
   )
-}
+})
 
 /**
  * Stack navigation component with header
@@ -135,7 +140,11 @@ function DefaultBackButton({
  * }
  * ```
  */
-export function Stack({ children, screenOptions = {} }: StackProps) {
+export function Stack({
+  children,
+  // rerender-memo-with-default-value: use hoisted default
+  screenOptions = DEFAULT_SCREEN_OPTIONS,
+}: StackProps) {
   const router = useRouter()
 
   const {
@@ -151,31 +160,35 @@ export function Stack({ children, screenOptions = {} }: StackProps) {
 
   const canGoBack = true // In a real implementation, check history length
 
-  const handleBack = () => {
+  // rerender-functional-setstate: stable callback with useCallback
+  const handleBack = useCallback(() => {
     router.back()
-  }
+  }, [router])
 
   if (!headerShown) {
     return <View style={styles.container}>{children}</View>
   }
 
+  // rendering-conditional-render: use ternary not &&
+  const headerLeftContent =
+    headerLeft !== undefined ? (
+      headerLeft
+    ) : headerBackVisible && canGoBack ? (
+      <DefaultBackButton tintColor={headerTintColor} onPress={handleBack} />
+    ) : null
+
+  const headerTitleContent =
+    headerTitle !== undefined ? (
+      headerTitle
+    ) : title ? (
+      <Text style={[styles.headerTitle, { color: headerTintColor }]}>{title}</Text>
+    ) : null
+
   return (
     <View style={styles.container}>
       <View style={[styles.header, { backgroundColor: headerBackgroundColor }]}>
-        <View style={styles.headerLeft}>
-          {headerLeft !== undefined ? (
-            headerLeft
-          ) : headerBackVisible && canGoBack ? (
-            <DefaultBackButton tintColor={headerTintColor} onPress={handleBack} />
-          ) : null}
-        </View>
-        <View style={styles.headerCenter}>
-          {headerTitle !== undefined ? (
-            headerTitle
-          ) : title ? (
-            <Text style={[styles.headerTitle, { color: headerTintColor }]}>{title}</Text>
-          ) : null}
-        </View>
+        <View style={styles.headerLeft}>{headerLeftContent}</View>
+        <View style={styles.headerCenter}>{headerTitleContent}</View>
         <View style={styles.headerRight}>{headerRight}</View>
       </View>
       <View style={styles.content}>{children}</View>
