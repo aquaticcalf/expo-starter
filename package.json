@@ -5,7 +5,8 @@
   "main": "index.ts",
   "scripts": {
     "dev": "expo start",
-    "fix": "oxfmt -c config/oxfmt.json --no-error-on-unmatched-pattern && oxlint -c config/oxlint.json --fix && tsc -p config/tsconfig.json --noEmit"
+    "fix": "oxfmt -c config/oxfmt.json --no-error-on-unmatched-pattern && oxlint -c config/oxlint.json --fix && tsc -p config/tsconfig.json --noEmit",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
     "expo": "~54.0.33",

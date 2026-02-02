@@ -1,0 +1,3 @@
+#!/bin/sh
+
+bun run fix || exit 1
