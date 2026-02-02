@@ -1,23 +1,9 @@
-import { StatusBar } from "expo-status-bar"
-import { html, css } from "react-strict-dom"
+import { FileSystemRouter } from "@/router"
+import type { PageModule } from "@/router"
 
-const styles = css.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  text: {
-    fontSize: 16,
-  },
-})
+// import all pages eagerly
+const pages = import.meta.glob<PageModule>("../pages/**/*.tsx", { eager: true })
 
 export default function App() {
-  return (
-    <html.div data-layoutconformance="strict" style={styles.container}>
-      <html.span style={styles.text}>Open up app.tsx to start working on your app!</html.span>
-      <StatusBar style="auto" />
-    </html.div>
-  )
+  return <FileSystemRouter pages={pages} />
 }
