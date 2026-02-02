@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "dev": "expo start",
-    "fix": "oxfmt --no-error-on-unmatched-pattern && oxlint --fix && tsc --noEmit"
+    "fix": "oxfmt -c config/oxfmt.json --no-error-on-unmatched-pattern && oxlint -c config/oxlint.json --fix && tsc --noEmit"
   },
   "dependencies": {
     "expo": "~54.0.33",
