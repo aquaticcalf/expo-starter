@@ -14,6 +14,7 @@ export {
   matchRoute,
   normalizePath,
   isLayoutFile,
+  is404Page,
   processPagesGlob,
 } from "./utils"
 
@@ -25,6 +26,9 @@ export type {
   LayoutProps,
   LayoutModule,
   Layouts,
+  NotFoundComponent,
+  NotFoundModule,
+  NotFounds,
   RouteParams,
   Route,
   NavigateOptions,

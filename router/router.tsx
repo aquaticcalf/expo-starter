@@ -1,7 +1,16 @@
 import { type ComponentType, useContext, useMemo } from "react"
 import { StyleSheet, Text, View } from "react-native"
 import { RouterContext, RouterProvider } from "./context"
-import type { FileSystemRouterProps, Layout, Layouts, Pages, Route, RouteParams } from "./types"
+import type {
+  FileSystemRouterProps,
+  Layout,
+  Layouts,
+  NotFoundComponent,
+  NotFounds,
+  Pages,
+  Route,
+  RouteParams,
+} from "./types"
 import { buildRoutes, matchRoute, processPagesGlob } from "./utils"
 
 // rendering-hoist-jsx: extract static styles outside component
@@ -34,6 +43,30 @@ function DefaultNotFound() {
 }
 
 /**
+ * Find the most specific 404 component for a pathname
+ * E.g., /users/123/not-exist → look for ./pages/users/404, then ./pages/404
+ */
+function findNotFoundForPath(
+  pathname: string,
+  routes: Route[],
+  rootNotFound: NotFoundComponent | null,
+): NotFoundComponent {
+  // First check if any route matches the parent path and has its own 404
+  const pathParts = pathname.split("/").filter(Boolean)
+
+  for (let i = pathParts.length; i >= 0; i--) {
+    const testPath = "/" + pathParts.slice(0, i).join("/")
+    const match = matchRoute(testPath, routes)
+    if (match && match.route.notFound) {
+      return match.route.notFound
+    }
+  }
+
+  // Fall back to root 404 or default
+  return rootNotFound ?? DefaultNotFound
+}
+
+/**
  * Component that wraps children with all layouts in order
  * Outer layouts wrap inner layouts
  */
@@ -49,10 +82,10 @@ function LayoutWrapper({ layouts, children }: { layouts: Layout[]; children: Rea
  */
 function RouteRenderer({
   routes,
-  notFoundComponent: NotFound,
+  rootNotFound,
 }: {
   routes: Route[]
-  notFoundComponent: React.ComponentType
+  rootNotFound: NotFoundComponent | null
 }) {
   const context = useContext(RouterContext)
 
@@ -76,7 +109,9 @@ function RouteRenderer({
   }, [paramsKey, updateParams])
 
   if (!matchResult) {
-    return <NotFound />
+    // No route matched - find most specific 404 for this path
+    const NotFoundComponent = findNotFoundForPath(pathname, routes, rootNotFound)
+    return <NotFoundComponent />
   }
 
   const { route } = matchResult
@@ -102,24 +137,29 @@ export function FileSystemRouter(props: FileSystemRouterProps) {
   const { initialPath = "/", notFound } = props
 
   // Build routes from either pagesDir or pages/layouts
-  const { routes, notFoundComponent } = useMemo(() => {
+  const { routes, rootNotFound } = useMemo(() => {
     if ("pagesDir" in props) {
       // Simple API: just provide the directory path
       const globPattern = `${props.pagesDir}/**/*.tsx`
       const modules = import.meta.glob<{ default: ComponentType }>(globPattern, { eager: true })
-      const { pages, layouts } = processPagesGlob(modules)
-      return buildRoutes(pages, layouts)
+      const { pages, layouts, notFounds } = processPagesGlob(modules)
+      return buildRoutes(pages, layouts, notFounds)
     } else {
-      // Advanced API: provide pre-loaded pages and layouts
-      return buildRoutes(props.pages, props.layouts ?? {})
+      // Advanced API: provide pre-loaded pages, layouts, and optional notFounds
+      return buildRoutes(
+        props.pages,
+        props.layouts ?? {},
+        (props as { notFounds?: NotFounds }).notFounds ?? {},
+      )
     }
   }, [props])
 
-  const NotFoundComponent = notFound ?? notFoundComponent ?? DefaultNotFound
+  // Allow override via prop, otherwise use root 404 from pages/404.tsx, or default
+  const finalRootNotFound = notFound ?? rootNotFound ?? DefaultNotFound
 
   return (
     <RouterProvider initialPath={initialPath}>
-      <RouteRenderer routes={routes} notFoundComponent={NotFoundComponent} />
+      <RouteRenderer routes={routes} rootNotFound={finalRootNotFound} />
     </RouterProvider>
   )
 }
@@ -127,6 +167,6 @@ export function FileSystemRouter(props: FileSystemRouterProps) {
 /**
  * Generate routes from pages object (for advanced use cases)
  */
-export function generateRoutes(pages: Pages, layouts: Layouts = {}) {
-  return buildRoutes(pages, layouts)
+export function generateRoutes(pages: Pages, layouts: Layouts = {}, notFounds: NotFounds = {}) {
+  return buildRoutes(pages, layouts, notFounds)
 }

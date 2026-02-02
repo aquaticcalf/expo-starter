@@ -27,6 +27,18 @@ export interface LayoutModule {
 }
 
 /**
+ * A 404/not-found component
+ */
+export type NotFoundComponent = ComponentType
+
+/**
+ * A 404 module imported via import.meta.glob
+ */
+export interface NotFoundModule {
+  default: NotFoundComponent
+}
+
+/**
  * Record of file paths to page modules
  * Key format: "./pages/[path].(tsx|jsx)"
  */
@@ -37,6 +49,12 @@ export type Pages = Record<string, PageModule>
  * Key format: "./pages/[path]/+layout.(tsx|jsx)"
  */
 export type Layouts = Record<string, LayoutModule>
+
+/**
+ * Record of file paths to 404 modules
+ * Key format: "./pages/404.(tsx|jsx)" or "./pages/[path]/404.(tsx|jsx)"
+ */
+export type NotFounds = Record<string, NotFoundModule>
 
 /**
  * Route parameters extracted from dynamic segments like [id]
@@ -52,6 +70,7 @@ export interface Route {
   paramNames: string[]
   component: ComponentType
   layouts: Layout[]
+  notFound: NotFoundComponent | null
 }
 
 /**
@@ -105,6 +124,7 @@ export type FileSystemRouterProps =
   | {
       pages: Pages
       layouts?: Layouts
+      notFounds?: NotFounds
       initialPath?: string
       notFound?: ComponentType
     }

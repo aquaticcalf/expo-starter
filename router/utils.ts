@@ -1,5 +1,16 @@
 import type { ComponentType } from "react"
-import type { Layout, LayoutModule, Layouts, PageModule, Pages, Route, RouteParams } from "./types"
+import type {
+  Layout,
+  LayoutModule,
+  Layouts,
+  NotFoundComponent,
+  NotFoundModule,
+  NotFounds,
+  PageModule,
+  Pages,
+  Route,
+  RouteParams,
+} from "./types"
 
 /**
  * Convert a file path like "./pages/users/[id].tsx" to route path "/users/:id"
@@ -58,10 +69,21 @@ function getLayoutDirectory(key: string): string {
 }
 
 /**
- * Check if a 404 page exists in the pages object
+ * Check if a file is a 404 page (at any level)
+ * "./pages/404.tsx" → true (root 404)
+ * "./pages/users/404.tsx" → true (nested 404)
  */
 export function is404Page(key: string): boolean {
-  return key === "./pages/404.jsx" || key === "./pages/404.tsx"
+  return /pages\/.*404\.(jsx|tsx)$/.test(key)
+}
+
+/**
+ * Get the directory a 404 page applies to
+ * "./pages/404.tsx" → "./pages" (applies to all routes)
+ * "./pages/users/404.tsx" → "./pages/users" (applies to /users/*)
+ */
+function get404Directory(key: string): string {
+  return key.replace(/\/404\.(jsx|tsx)$/, "")
 }
 
 /**
@@ -86,13 +108,14 @@ export function createRoutePattern(routePath: string): { pattern: RegExp; paramN
 }
 
 /**
- * Build routes from pages object with layouts
+ * Build routes from pages object with layouts and nested 404s
  */
 export function buildRoutes(
   pages: Pages,
   layouts: Layouts,
-): { routes: Route[]; notFoundComponent: Route["component"] | null } {
-  let notFoundComponent: Route["component"] | null = null
+  notFounds: NotFounds,
+): { routes: Route[]; rootNotFound: NotFoundComponent | null } {
+  let rootNotFound: NotFoundComponent | null = null
   const routes: Route[] = []
 
   // Build layout hierarchy: directory -> layout component
@@ -102,13 +125,19 @@ export function buildRoutes(
     layoutMap.set(dir, module.default)
   }
 
+  // Build 404 hierarchy: directory -> 404 component (more specific = deeper)
+  const notFoundMap = new Map<string, NotFoundComponent>()
+  for (const [key, module] of Object.entries(notFounds)) {
+    const dir = get404Directory(key)
+    notFoundMap.set(dir, module.default)
+    // Track root 404 separately
+    if (dir === "./pages") {
+      rootNotFound = module.default
+    }
+  }
+
   // Build routes
   for (const [key, module] of Object.entries(pages)) {
-    if (is404Page(key)) {
-      notFoundComponent = module.default
-      continue
-    }
-
     const path = convertFilePathToRoutePath(key)
     const { pattern, paramNames } = createRoutePattern(path)
 
@@ -133,12 +162,29 @@ export function buildRoutes(
       }
     }
 
+    // Find the most specific 404 for this route
+    let routeNotFound: NotFoundComponent | null = null
+    currentPath = "./pages"
+
+    // Check from root to page directory for most specific 404
+    if (notFoundMap.has(currentPath)) {
+      routeNotFound = notFoundMap.get(currentPath)!
+    }
+
+    for (let i = 1; i < parts.length; i++) {
+      currentPath += `/${parts[i]}`
+      if (notFoundMap.has(currentPath)) {
+        routeNotFound = notFoundMap.get(currentPath)!
+      }
+    }
+
     routes.push({
       path,
       pattern,
       paramNames,
       component: module.default,
       layouts: routeLayouts,
+      notFound: routeNotFound,
     })
   }
 
@@ -154,7 +200,7 @@ export function buildRoutes(
     return b.path.split("/").length - a.path.split("/").length
   })
 
-  return { routes, notFoundComponent }
+  return { routes, rootNotFound }
 }
 
 /**
@@ -191,23 +237,27 @@ export function normalizePath(path: string): string {
 }
 
 /**
- * Process glob results to separate pages and layouts
+ * Process glob results to separate pages, layouts, and 404s
  * Call this with: import.meta.glob with pattern for all tsx files in pages dir
  */
 export function processPagesGlob(modules: Record<string, { default: ComponentType }>): {
   pages: Pages
   layouts: Layouts
+  notFounds: NotFounds
 } {
   const pages: Pages = {}
   const layouts: Layouts = {}
+  const notFounds: NotFounds = {}
 
   for (const [key, module] of Object.entries(modules)) {
     if (isLayoutFile(key)) {
       layouts[key] = module as LayoutModule
-    } else if (!is404Page(key)) {
+    } else if (is404Page(key)) {
+      notFounds[key] = module as NotFoundModule
+    } else {
       pages[key] = module as PageModule
     }
   }
 
-  return { pages, layouts }
+  return { pages, layouts, notFounds }
 }
