@@ -1,6 +1,18 @@
 import type { ComponentType, ReactNode } from "react"
 
 /**
+ * Props for layout components
+ */
+export interface LayoutProps {
+  children: ReactNode
+}
+
+/**
+ * A layout component that wraps pages
+ */
+export type Layout = ComponentType<LayoutProps>
+
+/**
  * A page module imported via import.meta.glob or require.context
  */
 export interface PageModule {
@@ -8,10 +20,23 @@ export interface PageModule {
 }
 
 /**
+ * A layout module imported via import.meta.glob
+ */
+export interface LayoutModule {
+  default: Layout
+}
+
+/**
  * Record of file paths to page modules
  * Key format: "./pages/[path].(tsx|jsx)"
  */
 export type Pages = Record<string, PageModule>
+
+/**
+ * Record of file paths to layout modules
+ * Key format: "./pages/[path]/+layout.(tsx|jsx)"
+ */
+export type Layouts = Record<string, LayoutModule>
 
 /**
  * Route parameters extracted from dynamic segments like [id]
@@ -26,6 +51,7 @@ export interface Route {
   pattern: RegExp
   paramNames: string[]
   component: ComponentType
+  layouts: Layout[]
 }
 
 /**
@@ -72,6 +98,7 @@ export interface RouterProviderProps {
  */
 export interface FileSystemRouterProps {
   pages: Pages
+  layouts?: Layouts
   initialPath?: string
   notFound?: ComponentType
 }

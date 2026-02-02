@@ -1,4 +1,4 @@
-import type { Pages, Route, RouteParams } from "./types"
+import type { Layout, Layouts, Pages, Route, RouteParams } from "./types"
 
 /**
  * Convert a file path like "./pages/users/[id].tsx" to route path "/users/:id"
@@ -31,6 +31,39 @@ export function convertFilePathToRoutePath(key: string): string {
 }
 
 /**
+ * Extract directory path from a file path
+ * "./pages/users/[id].tsx" → "./pages/users"
+ * "./pages/index.tsx" → "./pages"
+ */
+function getDirectoryPath(key: string): string {
+  const lastSlashIndex = key.lastIndexOf("/")
+  return lastSlashIndex > 0 ? key.slice(0, lastSlashIndex) : "."
+}
+
+/**
+ * Check if a path is a layout file
+ */
+export function isLayoutFile(key: string): boolean {
+  return /pages\/.*\+layout\.(jsx|tsx)$/.test(key)
+}
+
+/**
+ * Get the directory a layout applies to
+ * "./pages/+layout.tsx" → "./pages"
+ * "./pages/users/+layout.tsx" → "./pages/users"
+ */
+function getLayoutDirectory(key: string): string {
+  return key.replace(/\/\+layout\.(jsx|tsx)$/, "")
+}
+
+/**
+ * Check if a 404 page exists in the pages object
+ */
+export function is404Page(key: string): boolean {
+  return key === "./pages/404.jsx" || key === "./pages/404.tsx"
+}
+
+/**
  * Convert a route path like "/users/:id" to a regex pattern
  */
 export function createRoutePattern(routePath: string): { pattern: RegExp; paramNames: string[] } {
@@ -52,22 +85,23 @@ export function createRoutePattern(routePath: string): { pattern: RegExp; paramN
 }
 
 /**
- * Check if a 404 page exists in the pages object
+ * Build routes from pages object with layouts
  */
-export function is404Page(key: string): boolean {
-  return key === "./pages/404.jsx" || key === "./pages/404.tsx"
-}
-
-/**
- * Build routes from pages object
- */
-export function buildRoutes(pages: Pages): {
-  routes: Route[]
-  notFoundComponent: Route["component"] | null
-} {
+export function buildRoutes(
+  pages: Pages,
+  layouts: Layouts,
+): { routes: Route[]; notFoundComponent: Route["component"] | null } {
   let notFoundComponent: Route["component"] | null = null
   const routes: Route[] = []
 
+  // Build layout hierarchy: directory -> layout component
+  const layoutMap = new Map<string, Layout>()
+  for (const [key, module] of Object.entries(layouts)) {
+    const dir = getLayoutDirectory(key)
+    layoutMap.set(dir, module.default)
+  }
+
+  // Build routes
   for (const [key, module] of Object.entries(pages)) {
     if (is404Page(key)) {
       notFoundComponent = module.default
@@ -77,11 +111,33 @@ export function buildRoutes(pages: Pages): {
     const path = convertFilePathToRoutePath(key)
     const { pattern, paramNames } = createRoutePattern(path)
 
+    // Collect layouts for this route (from root to leaf)
+    const routeLayouts: Layout[] = []
+    const pageDir = getDirectoryPath(key)
+
+    // Build path from root to page directory, collecting layouts
+    const parts = pageDir.replace(/^\.\//, "").split("/")
+    let currentPath = "./pages"
+
+    // Always check root layout first
+    if (layoutMap.has(currentPath)) {
+      routeLayouts.push(layoutMap.get(currentPath)!)
+    }
+
+    // Then check nested layouts
+    for (let i = 1; i < parts.length; i++) {
+      currentPath += `/${parts[i]}`
+      if (layoutMap.has(currentPath)) {
+        routeLayouts.push(layoutMap.get(currentPath)!)
+      }
+    }
+
     routes.push({
       path,
       pattern,
       paramNames,
       component: module.default,
+      layouts: routeLayouts,
     })
   }
 

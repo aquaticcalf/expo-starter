@@ -19,6 +19,10 @@ export {
 export type {
   PageModule,
   Pages,
+  Layout,
+  LayoutProps,
+  LayoutModule,
+  Layouts,
   RouteParams,
   Route,
   NavigateOptions,

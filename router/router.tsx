@@ -1,7 +1,7 @@
 import { useContext, useMemo } from "react"
 import { StyleSheet, Text, View } from "react-native"
 import { RouterContext, RouterProvider } from "./context"
-import type { FileSystemRouterProps, Pages, Route, RouteParams } from "./types"
+import type { FileSystemRouterProps, Layout, Layouts, Pages, Route, RouteParams } from "./types"
 import { buildRoutes, matchRoute } from "./utils"
 
 // rendering-hoist-jsx: extract static styles outside component
@@ -31,6 +31,17 @@ function DefaultNotFound() {
       <Text style={styles.subtitle}>Page not found</Text>
     </View>
   )
+}
+
+/**
+ * Component that wraps children with all layouts in order
+ * Outer layouts wrap inner layouts
+ */
+function LayoutWrapper({ layouts, children }: { layouts: Layout[]; children: React.ReactNode }) {
+  // Apply layouts from outermost to innermost
+  return layouts.reduce((wrapped, LayoutComponent) => {
+    return <LayoutComponent>{wrapped}</LayoutComponent>
+  }, children)
 }
 
 /**
@@ -71,6 +82,15 @@ function RouteRenderer({
   const { route } = matchResult
   const Component = route.component
 
+  // Wrap component with layouts if any exist
+  if (route.layouts.length > 0) {
+    return (
+      <LayoutWrapper layouts={route.layouts}>
+        <Component />
+      </LayoutWrapper>
+    )
+  }
+
   return <Component />
 }
 
@@ -78,8 +98,13 @@ function RouteRenderer({
  * File system router component
  * Takes a pages object (from import.meta.glob) and renders matching routes
  */
-export function FileSystemRouter({ pages, initialPath = "/", notFound }: FileSystemRouterProps) {
-  const { routes, notFoundComponent } = useMemo(() => buildRoutes(pages), [pages])
+export function FileSystemRouter({
+  pages,
+  layouts = {},
+  initialPath = "/",
+  notFound,
+}: FileSystemRouterProps & { layouts?: Layouts }) {
+  const { routes, notFoundComponent } = useMemo(() => buildRoutes(pages, layouts), [pages, layouts])
 
   const NotFoundComponent = notFound ?? notFoundComponent ?? DefaultNotFound
 
@@ -93,6 +118,6 @@ export function FileSystemRouter({ pages, initialPath = "/", notFound }: FileSys
 /**
  * Generate routes from pages object (for advanced use cases)
  */
-export function generateRoutes(pages: Pages) {
-  return buildRoutes(pages)
+export function generateRoutes(pages: Pages, layouts: Layouts = {}) {
+  return buildRoutes(pages, layouts)
 }
