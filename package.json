@@ -1,0 +1,26 @@
+{
+  "name": "expo-starter",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "dev": "expo start",
+    "fix": "oxfmt && oxlint --fix && tsc --noEmit"
+  },
+  "dependencies": {
+    "expo": "~54.0.33",
+    "expo-status-bar": "~3.0.9",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-strict-dom": "^0.0.55"
+  },
+  "devDependencies": {
+    "@expo/metro-runtime": "^6.1.2",
+    "@types/react": "^19.2.10",
+    "autoprefixer": "^10.4.24",
+    "babel-plugin-module-resolver": "^5.0.2",
+    "oxfmt": "^0.28.0",
+    "oxlint": "^1.43.0",
+    "typescript": "^5.9.3"
+  }
+}
