@@ -1,8 +1,8 @@
-import { useContext, useMemo } from "react"
+import { type ComponentType, useContext, useMemo } from "react"
 import { StyleSheet, Text, View } from "react-native"
 import { RouterContext, RouterProvider } from "./context"
 import type { FileSystemRouterProps, Layout, Layouts, Pages, Route, RouteParams } from "./types"
-import { buildRoutes, matchRoute } from "./utils"
+import { buildRoutes, matchRoute, processPagesGlob } from "./utils"
 
 // rendering-hoist-jsx: extract static styles outside component
 const styles = StyleSheet.create({
@@ -96,15 +96,24 @@ function RouteRenderer({
 
 /**
  * File system router component
- * Takes a pages object (from import.meta.glob) and renders matching routes
+ * Provide either pagesDir (simple) OR pages/layouts (advanced)
  */
-export function FileSystemRouter({
-  pages,
-  layouts = {},
-  initialPath = "/",
-  notFound,
-}: FileSystemRouterProps & { layouts?: Layouts }) {
-  const { routes, notFoundComponent } = useMemo(() => buildRoutes(pages, layouts), [pages, layouts])
+export function FileSystemRouter(props: FileSystemRouterProps) {
+  const { initialPath = "/", notFound } = props
+
+  // Build routes from either pagesDir or pages/layouts
+  const { routes, notFoundComponent } = useMemo(() => {
+    if ("pagesDir" in props) {
+      // Simple API: just provide the directory path
+      const globPattern = `${props.pagesDir}/**/*.tsx`
+      const modules = import.meta.glob<{ default: ComponentType }>(globPattern, { eager: true })
+      const { pages, layouts } = processPagesGlob(modules)
+      return buildRoutes(pages, layouts)
+    } else {
+      // Advanced API: provide pre-loaded pages and layouts
+      return buildRoutes(props.pages, props.layouts ?? {})
+    }
+  }, [props])
 
   const NotFoundComponent = notFound ?? notFoundComponent ?? DefaultNotFound
 

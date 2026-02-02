@@ -96,12 +96,18 @@ export interface RouterProviderProps {
 /**
  * FileSystemRouter component props
  */
-export interface FileSystemRouterProps {
-  pages: Pages
-  layouts?: Layouts
-  initialPath?: string
-  notFound?: ComponentType
-}
+export type FileSystemRouterProps =
+  | {
+      pagesDir: string
+      initialPath?: string
+      notFound?: ComponentType
+    }
+  | {
+      pages: Pages
+      layouts?: Layouts
+      initialPath?: string
+      notFound?: ComponentType
+    }
 
 /**
  * Link component props

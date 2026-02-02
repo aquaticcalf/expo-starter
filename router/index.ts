@@ -13,6 +13,8 @@ export {
   buildRoutes,
   matchRoute,
   normalizePath,
+  isLayoutFile,
+  processPagesGlob,
 } from "./utils"
 
 // Types

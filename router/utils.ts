@@ -1,4 +1,5 @@
-import type { Layout, Layouts, Pages, Route, RouteParams } from "./types"
+import type { ComponentType } from "react"
+import type { Layout, LayoutModule, Layouts, PageModule, Pages, Route, RouteParams } from "./types"
 
 /**
  * Convert a file path like "./pages/users/[id].tsx" to route path "/users/:id"
@@ -187,4 +188,26 @@ export function normalizePath(path: string): string {
     normalized = normalized.slice(0, -1)
   }
   return normalized
+}
+
+/**
+ * Process glob results to separate pages and layouts
+ * Call this with: import.meta.glob with pattern for all tsx files in pages dir
+ */
+export function processPagesGlob(modules: Record<string, { default: ComponentType }>): {
+  pages: Pages
+  layouts: Layouts
+} {
+  const pages: Pages = {}
+  const layouts: Layouts = {}
+
+  for (const [key, module] of Object.entries(modules)) {
+    if (isLayoutFile(key)) {
+      layouts[key] = module as LayoutModule
+    } else if (!is404Page(key)) {
+      pages[key] = module as PageModule
+    }
+  }
+
+  return { pages, layouts }
 }
