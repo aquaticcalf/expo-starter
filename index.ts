@@ -1,4 +1,4 @@
-import "./strict.css"
+import "./config/strict.css"
 import "@expo/metro-runtime"
 import { registerRootComponent } from "expo"
 import App from "./app"
