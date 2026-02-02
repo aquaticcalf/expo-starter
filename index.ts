@@ -1,6 +1,6 @@
-import './strict.css';
-import '@expo/metro-runtime';
-import { registerRootComponent } from 'expo';
-import App from './app';
+import "./strict.css"
+import "@expo/metro-runtime"
+import { registerRootComponent } from "expo"
+import App from "./app"
 
-registerRootComponent(App);
+registerRootComponent(App)

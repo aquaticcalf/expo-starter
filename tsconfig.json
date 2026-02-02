@@ -7,7 +7,6 @@
       "@/*": ["./*"]
     },
     "customConditions": ["react-native"],
-    "moduleResolution": "bundler",
-    "moduleSuffixes": [".ios", ".android", ".native", ""]
+    "moduleResolution": "bundler"
   }
 }

@@ -1,42 +1,39 @@
-const reactStrictPreset = require('react-strict-dom/babel-preset');
+const reactStrictPreset = require("react-strict-dom/babel-preset")
 
 function getPlatform(caller) {
-  return caller && caller.platform;
+  return caller && caller.platform
 }
 
 function getIsDev(caller) {
-  if (caller?.isDev != null) return caller.isDev;
-  return (
-    process.env.BABEL_ENV === 'development' ||
-    process.env.NODE_ENV === 'development'
-  );
+  if (caller?.isDev != null) return caller.isDev
+  return process.env.BABEL_ENV === "development" || process.env.NODE_ENV === "development"
 }
 
 module.exports = function (api) {
-  const platform = api.caller(getPlatform);
-  const dev = api.caller(getIsDev);
+  const platform = api.caller(getPlatform)
+  const dev = api.caller(getIsDev)
 
   return {
     presets: [
-      'babel-preset-expo',
+      "babel-preset-expo",
       [
         reactStrictPreset,
         {
           debug: dev,
           dev,
-          platform
-        }
-      ]
+          platform,
+        },
+      ],
     ],
     plugins: [
       [
-        'module-resolver',
+        "module-resolver",
         {
           alias: {
-            '@': './',
+            "@": "./",
           },
         },
       ],
     ],
-  };
-};
+  }
+}
