@@ -1,6 +1,6 @@
-import { html, css } from "react-strict-dom"
+import { StyleSheet, Text, View } from "react-native"
 
-const styles = css.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
@@ -14,8 +14,8 @@ const styles = css.create({
 
 export default function Home() {
   return (
-    <html.div data-layoutconformance="strict" style={styles.container}>
-      <html.span style={styles.text}>Home Page</html.span>
-    </html.div>
+    <View style={styles.container}>
+      <Text style={styles.text}>Home Page</Text>
+    </View>
   )
 }

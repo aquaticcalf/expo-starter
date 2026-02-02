@@ -1,7 +1,7 @@
-import { html, css } from "react-strict-dom"
+import { StyleSheet, Text, View } from "react-native"
 import type { LayoutProps } from "@/router"
 
-const styles = css.create({
+const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: "#f5f5f5",
@@ -23,11 +23,11 @@ const styles = css.create({
 
 export default function RootLayout({ children }: LayoutProps) {
   return (
-    <html.div data-layoutconformance="strict" style={styles.root}>
-      <html.div style={styles.header}>
-        <html.span style={styles.headerText}>My App</html.span>
-      </html.div>
-      <html.div style={styles.content}>{children}</html.div>
-    </html.div>
+    <View style={styles.root}>
+      <View style={styles.header}>
+        <Text style={styles.headerText}>My App</Text>
+      </View>
+      <View style={styles.content}>{children}</View>
+    </View>
   )
 }

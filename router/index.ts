@@ -3,6 +3,12 @@ export { FileSystemRouter, generateRoutes } from "./router"
 export { Link } from "./link"
 export { RouterProvider } from "./context"
 
+// Navigation components
+export { Tabs } from "./tabs"
+export type { TabsProps, TabItem } from "./tabs"
+export { Stack } from "./stack"
+export type { StackProps, StackScreenOptions, StackScreenProps } from "./stack"
+
 // Hooks
 export { useRouter, useParams, usePathname, useNavigate } from "./hooks"
 
@@ -15,6 +21,8 @@ export {
   normalizePath,
   isLayoutFile,
   is404Page,
+  isRouteGroup,
+  getGroupName,
   processPagesGlob,
 } from "./utils"
 

@@ -13,10 +13,27 @@ import type {
 } from "./types"
 
 /**
+ * Check if a segment is a route group (parentheses wrapped like "(tabs)")
+ * Route groups are used for layout organization but don't appear in the URL
+ */
+export function isRouteGroup(segment: string): boolean {
+  return segment.startsWith("(") && segment.endsWith(")")
+}
+
+/**
+ * Extract the group name from a route group segment
+ * "(tabs)" -> "tabs"
+ */
+export function getGroupName(segment: string): string {
+  return segment.slice(1, -1)
+}
+
+/**
  * Convert a file path like "./pages/users/[id].tsx" to route path "/users/:id"
+ * Route groups like "(tabs)" are excluded from the URL path
  */
 export function convertFilePathToRoutePath(key: string): string {
-  const match = key.match(/pages\/(.*)\.(?:jsx|tsx)$/)
+  const match = key.match(/pages\/(.*)\.(jsx|tsx)$/)
 
   if (!match) {
     throw new Error(`Invalid page path: ${key}`)
@@ -25,13 +42,15 @@ export function convertFilePathToRoutePath(key: string): string {
   const pathWithoutPages = match[1]
   const segments = pathWithoutPages.split("/")
 
-  const routeSegments = segments.map((segment) => {
-    if (segment === "index") return ""
-    if (segment.startsWith("[") && segment.endsWith("]")) {
-      return `:${segment.slice(1, -1)}`
-    }
-    return segment
-  })
+  const routeSegments = segments
+    .filter((segment) => !isRouteGroup(segment)) // Filter out route groups
+    .map((segment) => {
+      if (segment === "index") return ""
+      if (segment.startsWith("[") && segment.endsWith("]")) {
+        return `:${segment.slice(1, -1)}`
+      }
+      return segment
+    })
 
   const filteredSegments = [...routeSegments]
   while (filteredSegments.length > 0 && filteredSegments[filteredSegments.length - 1] === "") {
