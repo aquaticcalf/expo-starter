@@ -6,13 +6,13 @@ export default function RootLayout({ children }: LayoutProps) {
   const styles = useThemedStyles((theme) => ({
     root: {
       flex: 1,
-      backgroundColor: theme.colors.background.app,
+      backgroundColor: theme.colors.background.surface,
     },
     header: {
       paddingHorizontal: theme.spacing[4],
       paddingTop: theme.spacing[2],
       paddingBottom: theme.spacing[4],
-      backgroundColor: theme.colors.background.app,
+      backgroundColor: theme.colors.background.surface,
     },
     headerText: {
       ...theme.typography.scale.xl,
@@ -21,6 +21,7 @@ export default function RootLayout({ children }: LayoutProps) {
     },
     content: {
       flex: 1,
+      backgroundColor: theme.colors.background.app,
     },
   }))
 

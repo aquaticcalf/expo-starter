@@ -15,7 +15,7 @@ function AppContent() {
   const colors = useColors()
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background.app }]}>
+    <View style={[styles.container, { backgroundColor: colors.background.surface }]}>
       <StatusBar style={isDark ? "light" : "dark"} />
       <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
         <FileSystemRouter />
