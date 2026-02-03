@@ -9,7 +9,9 @@ export default function RootLayout({ children }: LayoutProps) {
       backgroundColor: theme.colors.background.app,
     },
     header: {
-      padding: theme.spacing[4],
+      paddingHorizontal: theme.spacing[4],
+      paddingTop: theme.spacing[2],
+      paddingBottom: theme.spacing[4],
       backgroundColor: theme.colors.background.surface,
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.border.default,
