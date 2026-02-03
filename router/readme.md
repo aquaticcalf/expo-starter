@@ -312,7 +312,7 @@ function Component() {
 
 ## Custom 404 Pages (Nested)
 
-404 pages work at any directory level. The most specific 404 is used for unmatched routes in that section. 404 pages are automatically wrapped with layouts from their directory hierarchy, just like regular pages.
+404 pages work at any directory level. If no specific 404 exists for the pathname, the router uses the 404 from the section the user came from (referrer). 404 pages are automatically wrapped with layouts from their directory hierarchy.
 
 ### Nested 404 Structure
 
@@ -333,7 +333,10 @@ pages/
 **Resolution order:**
 - `/users/999` not found → Uses `pages/users/404.tsx`
 - `/settings/admin` not found → Uses `pages/settings/404.tsx`
-- `/unknown-route` not found → Uses `pages/404.tsx` (root fallback)
+- `/unknown-route` with no referrer → Uses `pages/404.tsx` (root fallback)
+- `/history/xyz` (no `history/404.tsx`) with referrer `/users/123` → Uses `pages/users/404.tsx`
+
+**Note:** If a pathname has no specific 404 but the user navigated from a section with a 404, the referrer's section 404 is used. This provides contextual feedback based on where the user was browsing.
 
 ### Root 404: pages/404.tsx
 
