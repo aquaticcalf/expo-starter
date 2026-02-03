@@ -1,0 +1,142 @@
+/**
+ * Avatar Component
+ *
+ * User image display with fallback initials and status indicator.
+ */
+
+import { memo, useState } from "react"
+import { View, Image, StyleSheet } from "react-native"
+import { useThemeValue } from "@/theme"
+import { Text } from "./text"
+
+// =============================================================================
+// TYPES
+// =============================================================================
+
+type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl"
+type AvatarStatus = "online" | "offline" | "busy" | "away"
+
+export type AvatarProps = {
+  size?: AvatarSize
+  src?: string
+  fallback?: string
+  status?: AvatarStatus
+}
+
+// =============================================================================
+// SIZE CONFIGURATION
+// =============================================================================
+
+type SizeConfig = {
+  container: number
+  fontSize: "caption" | "label-small" | "label" | "body" | "title"
+  statusSize: number
+  statusBorder: number
+}
+
+const sizeConfig: Record<AvatarSize, SizeConfig> = {
+  xs: { container: 24, fontSize: "caption", statusSize: 8, statusBorder: 1 },
+  sm: { container: 32, fontSize: "label-small", statusSize: 10, statusBorder: 2 },
+  md: { container: 40, fontSize: "label", statusSize: 12, statusBorder: 2 },
+  lg: { container: 56, fontSize: "body", statusSize: 14, statusBorder: 2 },
+  xl: { container: 80, fontSize: "title", statusSize: 18, statusBorder: 3 },
+}
+
+// =============================================================================
+// COMPONENT
+// =============================================================================
+
+export const Avatar = memo(function Avatar({ size = "md", src, fallback, status }: AvatarProps) {
+  const theme = useThemeValue()
+  const config = sizeConfig[size]
+  const [imageError, setImageError] = useState(false)
+
+  const showImage = src && !imageError
+  const initials = getInitials(fallback)
+
+  const containerStyle = {
+    width: config.container,
+    height: config.container,
+    borderRadius: config.container / 2,
+    backgroundColor: theme.colors.brand.subtle,
+  }
+
+  return (
+    <View style={[styles.container, containerStyle]}>
+      {showImage ? (
+        <Image
+          source={{ uri: src }}
+          style={[styles.image, { borderRadius: config.container / 2 }]}
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <Text variant={config.fontSize} weight="semibold" color="brand">
+          {initials}
+        </Text>
+      )}
+
+      {status && (
+        <View
+          style={[
+            styles.status,
+            {
+              width: config.statusSize,
+              height: config.statusSize,
+              borderRadius: config.statusSize / 2,
+              borderWidth: config.statusBorder,
+              borderColor: theme.colors.background.surface,
+              backgroundColor: getStatusColor(status, theme),
+            },
+          ]}
+        />
+      )}
+    </View>
+  )
+})
+
+// =============================================================================
+// STYLES
+// =============================================================================
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  image: {
+    width: "100%",
+    height: "100%",
+  },
+  status: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+  },
+})
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+
+function getInitials(name?: string): string {
+  if (!name) return "?"
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) {
+    return parts[0].charAt(0).toUpperCase()
+  }
+  return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+}
+
+function getStatusColor(status: AvatarStatus, theme: ReturnType<typeof useThemeValue>): string {
+  switch (status) {
+    case "online":
+      return theme.colors.success.default
+    case "offline":
+      return theme.colors.foreground.subtle
+    case "busy":
+      return theme.colors.error.default
+    case "away":
+      return theme.colors.warning.default
+  }
+}
