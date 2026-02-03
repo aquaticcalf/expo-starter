@@ -1,6 +1,7 @@
 import { memo, useCallback, type ReactNode } from "react"
 import { Box, Flex, Text, Pressable } from "@/components"
 import { useNavigate, usePathname } from "./hooks"
+import { useThemeValue } from "@/theme"
 
 /**
  * Tab item configuration
@@ -39,17 +40,17 @@ const TabButton = memo(function TabButton({
   active: boolean
   onPress: () => void
 }) {
-  // rendering-conditional-render: use ternary not &&
+  const theme = useThemeValue()
   const icon = active && tab.activeIcon ? tab.activeIcon : tab.icon
+  const textColor = active ? theme.colors.brand.default : theme.colors.foreground.default
 
   return (
-    <Pressable onPress={onPress} style={{ flex: 1, alignItems: "center", paddingVertical: 8 }}>
+    <Pressable onPress={onPress} style={{ flexGrow: 1, alignItems: "center", justifyContent: "center", paddingVertical: 8 }}>
       {icon}
       <Text
         variant="caption"
         weight={active ? "semibold" : "normal"}
-        color={active ? "brand" : "subtle"}
-        style={{ marginTop: 4 }}
+        style={{ marginTop: 4, color: textColor }}
       >
         {tab.label}
       </Text>
@@ -110,6 +111,7 @@ export function Tabs({ tabs, children }: TabsProps) {
       <Box flex={1}>{children}</Box>
       <Flex
         direction="row"
+        justify="around"
         bg="surface"
         borderColor="muted"
         style={{ borderTopWidth: 1, paddingBottom: 20, paddingTop: 8 }}

@@ -1,6 +1,7 @@
 import { type ComponentType, useContext, useEffect, useMemo, useRef } from "react"
-import { StyleSheet, Text, View } from "react-native"
 import { RouterContext, RouterProvider } from "./context"
+import { Flex, Text, Button } from "@/components"
+import { useNavigate } from "./hooks"
 import type {
   FileSystemRouterProps,
   Layout,
@@ -16,22 +17,7 @@ import type {
 } from "./types"
 import { buildRoutes, is404Page, isLayoutFile, matchRoute } from "./utils"
 
-// Static styles extracted outside component to avoid recreation on render.
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  subtitle: {
-    fontSize: 16,
-    marginTop: 8,
-  },
-})
+
 
 /**
  * Import all page modules using require.context.
@@ -78,11 +64,22 @@ const { pages, layouts, notFounds } = processContextImports()
  * Used as fallback when no custom 404 is defined.
  */
 function DefaultNotFound() {
+  const navigate = useNavigate()
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>404</Text>
-      <Text style={styles.subtitle}>Page not found</Text>
-    </View>
+    <Flex flex={1} align="center" justify="center" gap={20} >
+      <Flex align="center" gap={2} >
+        <Text variant="headline" color="default">
+          404
+        </Text>
+        <Text variant="body" color="muted">
+          Page not found
+        </Text>
+      </Flex>
+      <Button onPress={() => navigate("/")}>
+        Go Home
+      </Button>
+    </Flex>
   )
 }
 

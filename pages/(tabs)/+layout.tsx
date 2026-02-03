@@ -1,12 +1,28 @@
 import type { LayoutProps } from "@/router"
 import type { TabItem } from "@/router/tabs"
 import { Tabs } from "@/router/tabs"
+import { Icon } from "@/components"
 
 // rerender-memo-with-default-value: hoist non-primitive props outside component
 const TAB_CONFIG: TabItem[] = [
-  { href: "/", label: "Home" },
-  { href: "/explore", label: "Explore" },
-  { href: "/profile", label: "Profile" },
+  { 
+    href: "/", 
+    label: "Home",
+    icon: <Icon name="home" size="md" color="default" />,
+    activeIcon: <Icon name="home-fill" size="md" color="brand" />
+  },
+  { 
+    href: "/explore", 
+    label: "Explore",
+    icon: <Icon name="globe" size="md" color="default" />,
+    activeIcon: <Icon name="globe" size="md" color="brand" />
+  },
+  { 
+    href: "/profile", 
+    label: "Profile",
+    icon: <Icon name="person" size="md" color="default" />,
+    activeIcon: <Icon name="person-fill" size="md" color="brand" />
+  },
 ]
 
 /**
