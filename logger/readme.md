@@ -64,6 +64,61 @@ function UserProfile({ userId }: { userId: string }) {
 }
 ```
 
+## Sampling (Log Filtering)
+
+Afterlog uses **sampling rules** to filter which events get logged, rather than traditional log levels.
+
+```tsx
+import { LoggerProvider, createHybridAdapter, errorRule, createLatencyRule } from "@/logger"
+
+export default function App() {
+  return (
+    <LoggerProvider
+      adapter={await createHybridAdapter({ console: true })}
+      sampling={{
+        rules: [
+          errorRule,  // Always log errors
+          createLatencyRule({ threshold_ms: 1000, sample_rate: 1.0 }),  // Log slow requests
+        ],
+        default_rate: 0.05,  // 5% of everything else
+      }}
+    >
+      {/* app content */}
+    </LoggerProvider>
+  )
+}
+```
+
+### Built-in Sampling Rules
+
+| Rule | Description |
+|------|-------------|
+| `errorRule` | Always samples events with errors |
+| `createLatencyRule({ threshold_ms, sample_rate })` | Samples slow requests |
+| `createRandomRule(rate, priority?)` | Random sampling (0-1) |
+| `createConsistentRule({ sample_rate })` | Same trace_id = same sampling decision |
+
+### Custom Sampling Rules
+
+```tsx
+const vipRule: SamplingRule = {
+  name: "vip_users",
+  priority: 5,
+  evaluate: (event) => {
+    if (event.user_tier === "vip") {
+      return { sampled: true, rate: 1.0, reason: "vip" }
+    }
+  }
+}
+
+<LoggerProvider
+  adapter={adapter}
+  sampling={{ rules: [vipRule], default_rate: 0.01 }}
+>
+```
+
+Rules are evaluated by priority (lowest first). First rule with a result wins.
+
 ## Adapters
 
 ### Console Adapter
@@ -110,8 +165,8 @@ const adapter = await createHybridAdapter({
 | Prop | Type | Description |
 |------|------|-------------|
 | children | ReactNode | Child components |
-| adapter | LoggerAdapter | Custom adapter (optional) |
-| level | LogLevel | Minimum log level |
+| adapter | LoggerAdapter | Custom adapter |
+| sampling | SamplingConfig | Sampling rules for log filtering |
 | service | string | Service name for logs |
 | version | string | Version for logs |
 
@@ -140,7 +195,7 @@ await log.finalize()
 
 Logs are stored in:
 
-- **iOS**: `FileSystem.documentDirectory + "logs/"`
-- **Android**: `FileSystem.documentDirectory + "logs/"`
+- **iOS**: `FileSystem.Paths.document + "logs/"`
+- **Android**: `FileSystem.Paths.document + "logs/"`
 
-Files are rotated with `.1`, `.2`, etc. suffixes when they reach capacity.
+Files are in JSONL format (one JSON object per line).

@@ -4,7 +4,13 @@ import { StatusBar } from "expo-status-bar"
 import { StyleSheet, View } from "react-native"
 import { FileSystemRouter } from "@/router"
 import { ThemeProvider, useColors, useIsDark } from "@/theme"
-import { LoggerProvider, createHybridAdapter, type LoggerAdapter } from "@/logger"
+import {
+  LoggerProvider,
+  createHybridAdapter,
+  type LoggerAdapter,
+  errorRule,
+  createLatencyRule,
+} from "@/logger"
 
 const styles = StyleSheet.create({
   container: {
@@ -40,7 +46,13 @@ export default function App() {
   return (
     <SafeAreaProvider>
       {loggerAdapter ? (
-        <LoggerProvider adapter={loggerAdapter}>
+        <LoggerProvider
+          adapter={loggerAdapter}
+          sampling={{
+            rules: [errorRule, createLatencyRule({ threshold_ms: 1000, sample_rate: 1.0 })],
+            default_rate: 0.05,
+          }}
+        >
           <ThemeProvider>
             <AppContent />
           </ThemeProvider>

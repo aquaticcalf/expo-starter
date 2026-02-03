@@ -1,12 +1,10 @@
-import type { LoggerAdapter } from "afterlog"
+import type { LoggerAdapter, SamplingConfig, SamplingRule } from "afterlog"
 
-export type { LoggerAdapter }
-
-export type LogLevel = "debug" | "info" | "warn" | "error"
+export type { LoggerAdapter, SamplingConfig, SamplingRule }
 
 export interface LoggerConfig {
   adapter: LoggerAdapter
-  level?: LogLevel
+  sampling?: SamplingConfig
   service?: string
   version?: string
 }
@@ -18,6 +16,13 @@ export interface FileAdapterConfig {
 }
 
 export interface UseLoggerReturn {
+  debug: (message: string, data?: Record<string, unknown>) => void
+  info: (message: string, data?: Record<string, unknown>) => void
+  warn: (message: string, data?: Record<string, unknown>) => void
+  error: (message: string, error?: Error, data?: Record<string, unknown>) => void
+}
+
+export type LoggerHookReturn = {
   debug: (message: string, data?: Record<string, unknown>) => void
   info: (message: string, data?: Record<string, unknown>) => void
   warn: (message: string, data?: Record<string, unknown>) => void

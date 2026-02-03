@@ -1,12 +1,12 @@
 import React, { createContext, useCallback, useMemo, useState, type ReactNode } from "react"
 import { afterlog, type Builder } from "afterlog"
-import type { LoggerAdapter, UseLoggerReturn } from "./types"
+import type { LoggerAdapter, UseLoggerReturn, SamplingConfig } from "./types"
 
 interface LoggerContextValue {
   adapter: LoggerAdapter | null
   configure: (config: {
     adapter: LoggerAdapter
-    level?: string
+    sampling?: SamplingConfig
     service?: string
     version?: string
   }) => void
@@ -19,17 +19,30 @@ export const LoggerContext = createContext<LoggerContextValue | null>(null)
 export interface LoggerProviderProps {
   children: ReactNode
   adapter?: LoggerAdapter
+  sampling?: SamplingConfig
   service?: string
   version?: string
 }
 
-export function LoggerProvider({ children, adapter, service, version }: LoggerProviderProps) {
+export function LoggerProvider({
+  children,
+  adapter,
+  sampling,
+  service,
+  version,
+}: LoggerProviderProps) {
   const [configured, setConfigured] = useState(false)
 
   const configure = useCallback(
-    (config: { adapter: LoggerAdapter; level?: string; service?: string; version?: string }) => {
+    (config: {
+      adapter: LoggerAdapter
+      sampling?: SamplingConfig
+      service?: string
+      version?: string
+    }) => {
       afterlog.configure({
         adapter: config.adapter,
+        sampling: config.sampling,
         service: config.service,
         version: config.version,
       })
@@ -42,12 +55,13 @@ export function LoggerProvider({ children, adapter, service, version }: LoggerPr
     if (adapter && !configured) {
       afterlog.configure({
         adapter,
+        sampling,
         service,
         version,
       })
       setConfigured(true)
     }
-  }, [adapter, service, version, configured])
+  }, [adapter, sampling, service, version, configured])
 
   const createBuilder = useCallback((init?: Record<string, unknown>) => {
     return afterlog.createBuilder(init)
@@ -56,19 +70,19 @@ export function LoggerProvider({ children, adapter, service, version }: LoggerPr
   const log: UseLoggerReturn = useMemo(
     () => ({
       debug: (message: string, data?: Record<string, unknown>) => {
-        const builder = afterlog.createBuilder({ level: "debug", message, ...data })
+        const builder = afterlog.createBuilder({ _level: "debug", message, ...data })
         afterlog.finalize(builder)
       },
       info: (message: string, data?: Record<string, unknown>) => {
-        const builder = afterlog.createBuilder({ level: "info", message, ...data })
+        const builder = afterlog.createBuilder({ _level: "info", message, ...data })
         afterlog.finalize(builder)
       },
       warn: (message: string, data?: Record<string, unknown>) => {
-        const builder = afterlog.createBuilder({ level: "warn", message, ...data })
+        const builder = afterlog.createBuilder({ _level: "warn", message, ...data })
         afterlog.finalize(builder)
       },
       error: (message: string, error?: Error, data?: Record<string, unknown>) => {
-        const builder = afterlog.createBuilder({ level: "error", message, ...data })
+        const builder = afterlog.createBuilder({ _level: "error", message, ...data })
         if (error) {
           builder.error(error)
         }

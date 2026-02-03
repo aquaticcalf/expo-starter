@@ -36,10 +36,17 @@ export { createConsoleLogAdapter, createFileAdapter, createHybridAdapter } from 
 export type {
   LoggerConfig,
   FileAdapterConfig,
-  LogLevel,
   UseLoggerReturn,
   LoggerAdapter,
+  SamplingConfig,
+  SamplingRule,
 } from "./types"
 
 // Afterlog exports
-export { afterlog } from "afterlog"
+export {
+  afterlog,
+  errorRule,
+  createLatencyRule,
+  createRandomRule,
+  createConsistentRule,
+} from "afterlog"
