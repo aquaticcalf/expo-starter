@@ -39,13 +39,13 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      {loggerAdapter && (
+      {loggerAdapter ? (
         <LoggerProvider adapter={loggerAdapter}>
           <ThemeProvider>
             <AppContent />
           </ThemeProvider>
         </LoggerProvider>
-      )}
+      ) : null}
     </SafeAreaProvider>
   )
 }

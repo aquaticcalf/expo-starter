@@ -4,6 +4,9 @@ import type { FileAdapterConfig } from "./types"
 
 const LOG_DIR = `${FileSystem.Paths.document.uri}logs/`
 
+// js-cache-function-results: Cache TextEncoder instance
+const textEncoder = new TextEncoder()
+
 async function ensureLogDirectory(): Promise<void> {
   const dir = new FileSystem.Directory(LOG_DIR)
   if (!dir.exists) {
@@ -46,7 +49,7 @@ export async function createFileAdapter(config: FileAdapterConfig = {}): Promise
       try {
         const line = JSON.stringify(event) + "\n"
         const { handle } = await getFileHandle()
-        handle.writeBytes(new TextEncoder().encode(line))
+        handle.writeBytes(textEncoder.encode(line))
       } catch {
         console.error("[Logger] Failed to write log to file")
       }

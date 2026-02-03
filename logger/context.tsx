@@ -19,18 +19,11 @@ export const LoggerContext = createContext<LoggerContextValue | null>(null)
 export interface LoggerProviderProps {
   children: ReactNode
   adapter?: LoggerAdapter
-  _level?: string
   service?: string
   version?: string
 }
 
-export function LoggerProvider({
-  children,
-  adapter,
-  _level,
-  service,
-  version,
-}: LoggerProviderProps) {
+export function LoggerProvider({ children, adapter, service, version }: LoggerProviderProps) {
   const [configured, setConfigured] = useState(false)
 
   const configure = useCallback(
