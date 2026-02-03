@@ -6,7 +6,9 @@
       "name": "expo-template-blank",
       "dependencies": {
         "@expo/vector-icons": "^15.0.3",
+        "afterlog": "^1.0.2",
         "expo": "~54.0.33",
+        "expo-file-system": "^19.0.21",
         "expo-font": "~14.0.11",
         "expo-status-bar": "~3.0.9",
         "react": "19.1.0",
@@ -397,6 +399,8 @@
     "accepts": ["accepts@1.3.8", "", { "dependencies": { "mime-types": "~2.1.34", "negotiator": "0.6.3" } }, "sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw=="],
 
     "acorn": ["acorn@8.15.0", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg=="],
+
+    "afterlog": ["afterlog@1.0.2", "", { "peerDependencies": { "typescript": "^5" } }, "sha512-cGlJHVsMAs+LznUyLw2935gWOEDq4iWKPEawJMKt9JEOwDkbeJkUepNQ/aen+6Jeg/Q5pX0e4LBGIQn7HOKZow=="],
 
     "agent-base": ["agent-base@7.1.4", "", {}, "sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ=="],
 
