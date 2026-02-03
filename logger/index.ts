@@ -32,6 +32,16 @@ export { useLogger, useRequestLogger } from "./hooks"
 // Adapters
 export { createConsoleLogAdapter, createFileAdapter, createHybridAdapter } from "./adapters"
 
+// Simple logger utilities
+export {
+  createLogger,
+  createComponentLogger,
+  createActionLogger,
+  logTiming,
+  logAsync,
+  logSync,
+} from "./simple"
+
 // Types
 export type {
   LoggerConfig,
