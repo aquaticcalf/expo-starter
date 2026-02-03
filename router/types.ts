@@ -97,6 +97,7 @@ export interface RouterInstance {
  */
 export interface RouterContextValue {
   pathname: string
+  previousPathname: string | null
   params: RouteParams
   navigate: (path: string, options?: NavigateOptions) => void
   back: () => void

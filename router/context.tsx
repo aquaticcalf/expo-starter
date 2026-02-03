@@ -66,6 +66,8 @@ export function RouterProvider({ children, initialPath = "/" }: RouterProviderPr
   const contextValue = useMemo<RouterContextValue>(
     () => ({
       pathname,
+      previousPathname:
+        historyIndexRef.current > 0 ? historyRef.current[historyIndexRef.current - 1] : null,
       params,
       navigate,
       back,

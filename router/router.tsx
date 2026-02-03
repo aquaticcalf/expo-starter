@@ -80,33 +80,15 @@ function DefaultNotFound() {
 }
 
 /**
- * Find the most specific 404 component and its layouts for a pathname.
- * Walks up the path hierarchy to find the nearest 404 handler and all applicable layouts.
- * Parent-level notFound prop takes precedence if provided.
+ * Collect layouts from root to the given directory path.
  */
-function findNotFoundForPath(
-  pathname: string,
-  notFounds: NotFounds,
-  layoutMap: Map<string, Layout>,
-  parentNotFound?: NotFoundComponent,
-): { notFound: NotFoundComponent; layouts: Layout[] } {
+function collectLayoutsForPath(targetPath: string, layoutMap: Map<string, Layout>): Layout[] {
   const layouts: Layout[] = []
-  let routeNotFound: NotFoundComponent | null = parentNotFound ?? null
-
-  const notFoundMap = new Map<string, NotFoundComponent>()
-  for (const [key, module] of Object.entries(notFounds)) {
-    const dir = key.replace(/\/404\.(jsx|tsx)$/, "")
-    notFoundMap.set(dir, module.default)
-  }
-
-  const pathParts = pathname.split("/").filter(Boolean)
+  const pathParts = targetPath.split("/").filter(Boolean)
 
   let currentPath = "./pages"
   if (layoutMap.has(currentPath)) {
     layouts.push(layoutMap.get(currentPath)!)
-  }
-  if (!routeNotFound && notFoundMap.has(currentPath)) {
-    routeNotFound = notFoundMap.get(currentPath)!
   }
 
   for (let i = 0; i < pathParts.length; i++) {
@@ -114,12 +96,79 @@ function findNotFoundForPath(
     if (layoutMap.has(currentPath)) {
       layouts.push(layoutMap.get(currentPath)!)
     }
-    if (!routeNotFound && notFoundMap.has(currentPath)) {
-      routeNotFound = notFoundMap.get(currentPath)!
+  }
+
+  return layouts
+}
+
+/**
+ * Find the most specific 404 component for a pathname.
+ * If no specific 404 exists for the pathname, use the referrer's section 404.
+ */
+function findNotFoundForPath(
+  pathname: string,
+  referrer: string | null,
+  notFounds: NotFounds,
+  layoutMap: Map<string, Layout>,
+  parentNotFound?: NotFoundComponent,
+): { notFound: NotFoundComponent; layouts: Layout[] } {
+  const notFoundMap = new Map<string, NotFoundComponent>()
+  for (const [key, module] of Object.entries(notFounds)) {
+    const dir = key.replace(/\/404\.(jsx|tsx)$/, "")
+    notFoundMap.set(dir, module.default)
+  }
+
+  // First, try to find the most specific 404 for the pathname.
+  const pathParts = pathname.split("/").filter(Boolean)
+  let currentPath = "./pages"
+  let specific404: NotFoundComponent | null = null
+
+  if (notFoundMap.has(currentPath)) {
+    specific404 = notFoundMap.get(currentPath)!
+  }
+
+  for (let i = 0; i < pathParts.length; i++) {
+    currentPath += `/${pathParts[i]}`
+    if (notFoundMap.has(currentPath)) {
+      specific404 = notFoundMap.get(currentPath)!
     }
   }
 
-  return { notFound: routeNotFound ?? DefaultNotFound, layouts }
+  // If specific 404 found, use it with its layouts.
+  if (specific404) {
+    const layouts = collectLayoutsForPath(currentPath.replace(/^\.\/pages/, ""), layoutMap)
+    return { notFound: specific404, layouts }
+  }
+
+  // No specific 404 for pathname, use referrer's section 404.
+  if (referrer) {
+    const referrerParts = referrer.split("/").filter(Boolean)
+    currentPath = "./pages"
+    let referrer404: NotFoundComponent | null = null
+    let referrer404Dir = ""
+
+    if (notFoundMap.has(currentPath)) {
+      referrer404 = notFoundMap.get(currentPath)!
+      referrer404Dir = ""
+    }
+
+    for (let i = 0; i < referrerParts.length; i++) {
+      currentPath += `/${referrerParts[i]}`
+      if (notFoundMap.has(currentPath)) {
+        referrer404 = notFoundMap.get(currentPath)!
+        referrer404Dir = currentPath.replace(/^\.\/pages/, "")
+      }
+    }
+
+    if (referrer404) {
+      const layouts = collectLayoutsForPath(referrer404Dir, layoutMap)
+      return { notFound: referrer404, layouts }
+    }
+  }
+
+  // Fall back to parent-level notFound or default.
+  const layouts = collectLayoutsForPath("", layoutMap)
+  return { notFound: parentNotFound ?? DefaultNotFound, layouts }
 }
 
 /**
@@ -153,7 +202,7 @@ function RouteRenderer({
     throw new Error("RouteRenderer must be used within RouterProvider.")
   }
 
-  const { pathname, updateParams } = context
+  const { pathname, previousPathname, updateParams } = context
 
   // Derive match result during render to avoid effect timing issues.
   const matchResult = useMemo(() => matchRoute(pathname, routes), [pathname, routes])
@@ -182,6 +231,7 @@ function RouteRenderer({
     // No route matched - find most specific 404 and its layouts for this path.
     const { notFound: NotFoundComponent, layouts } = findNotFoundForPath(
       pathname,
+      previousPathname,
       notFounds,
       layoutMap,
       parentNotFound,
