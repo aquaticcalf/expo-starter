@@ -320,10 +320,9 @@ function Component() {
 pages/
 ├── 404.tsx                    → Fallback for entire app
 ├── index.tsx                  → /
-├── users/
-│   ├── 404.tsx                → Shown for /users/* unmatched routes
-│   ├── index.tsx              → /users
-│   └── [id].tsx               → /users/:id
+├── (tabs)/
+│   ├── 404.tsx                → Shown for routes navigated from (tabs) section
+│   └── index.tsx              → /
 └── settings/
     ├── 404.tsx                → Shown for /settings/* unmatched routes
     ├── index.tsx              → /settings
@@ -334,9 +333,10 @@ pages/
 - `/users/999` not found → Uses `pages/users/404.tsx`
 - `/settings/admin` not found → Uses `pages/settings/404.tsx`
 - `/unknown-route` with no referrer → Uses `pages/404.tsx` (root fallback)
+- `/explore` not found with referrer `/` (from `(tabs)` section) → Uses `pages/(tabs)/404.tsx`
 - `/history/xyz` (no `history/404.tsx`) with referrer `/users/123` → Uses `pages/users/404.tsx`
 
-**Note:** If a pathname has no specific 404 but the user navigated from a section with a 404, the referrer's section 404 is used. This provides contextual feedback based on where the user was browsing.
+**Note:** If a pathname has no specific 404 but the user navigated from a section with a 404 (including route groups like `(tabs)`), the referrer's section 404 is used. This provides contextual feedback based on where the user was browsing.
 
 ### Root 404: pages/404.tsx
 
