@@ -16,7 +16,7 @@ import type {
 } from "./types"
 import { buildRoutes, is404Page, isLayoutFile, matchRoute } from "./utils"
 
-// rendering-hoist-jsx: extract static styles outside component
+// Static styles extracted outside component to avoid recreation on render.
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -34,12 +34,14 @@ const styles = StyleSheet.create({
 })
 
 /**
- * Import all page modules using require.context
+ * Import all page modules using require.context.
+ * This enables automatic route discovery at build time.
  */
 const pagesContext = require.context("../pages", true, /\.tsx$/)
 
 /**
- * Process the context modules into pages, layouts, and 404s
+ * Process the context modules into pages, layouts, and 404s.
+ * Separates different file types for the route builder.
  */
 function processContextImports(): {
   pages: Pages
@@ -51,8 +53,8 @@ function processContextImports(): {
   const notFounds: NotFounds = {}
 
   pagesContext.keys().forEach((key) => {
-    // require.context returns keys like "./index.tsx", "./(tabs)/+layout.tsx"
-    // Convert to full path format: "./pages/index.tsx"
+    // Convert require.context key format to full path format.
+    // "./index.tsx" -> "./pages/index.tsx"
     const fullKey = `./pages${key.slice(1)}`
     const module = pagesContext(key) as { default: ComponentType }
 
@@ -68,11 +70,12 @@ function processContextImports(): {
   return { pages, layouts, notFounds }
 }
 
-// Pre-processed page modules - evaluated once at module load
+// Pre-process page modules at module load time for faster startup.
 const { pages, layouts, notFounds } = processContextImports()
 
 /**
- * Default 404 component
+ * Default 404 component shown when no route matches.
+ * Used as fallback when no custom 404 is defined.
  */
 function DefaultNotFound() {
   return (
@@ -84,17 +87,18 @@ function DefaultNotFound() {
 }
 
 /**
- * Find the most specific 404 component for a pathname
- * E.g., /users/123/not-exist → look for ./pages/users/404, then ./pages/404
+ * Find the most specific 404 component for a pathname.
+ * Walks up the path hierarchy to find the nearest 404 handler.
+ * E.g., /users/123/not-exist -> look for ./pages/users/404, then ./pages/404.
  */
 function findNotFoundForPath(
   pathname: string,
   routes: Route[],
   rootNotFound: NotFoundComponent | null,
 ): NotFoundComponent {
-  // First check if any route matches the parent path and has its own 404
   const pathParts = pathname.split("/").filter(Boolean)
 
+  // Check from most specific to least specific path.
   for (let i = pathParts.length; i >= 0; i--) {
     const testPath = "/" + pathParts.slice(0, i).join("/")
     const match = matchRoute(testPath, routes)
@@ -103,23 +107,23 @@ function findNotFoundForPath(
     }
   }
 
-  // Fall back to root 404 or default
+  // Fall back to root 404 or default.
   return rootNotFound ?? DefaultNotFound
 }
 
 /**
- * Component that wraps children with all layouts in order
- * Outer layouts wrap inner layouts
+ * Wrap children with all layouts in order (outer to inner).
+ * Uses reduce to nest layout components properly.
  */
 function LayoutWrapper({ layouts, children }: { layouts: Layout[]; children: React.ReactNode }) {
-  // Apply layouts from outermost to innermost
   return layouts.reduce((wrapped, LayoutComponent) => {
     return <LayoutComponent>{wrapped}</LayoutComponent>
   }, children)
 }
 
 /**
- * Internal component that renders the matched route
+ * Internal component that renders the matched route.
+ * Handles route matching, param extraction, and layout application.
  */
 function RouteRenderer({
   routes,
@@ -131,17 +135,20 @@ function RouteRenderer({
   const context = useContext(RouterContext)
 
   if (!context) {
-    throw new Error("RouteRenderer must be used within RouterProvider")
+    throw new Error("RouteRenderer must be used within RouterProvider.")
   }
 
   const { pathname, updateParams } = context
 
-  // rerender-derived-state-no-effect: derive match result during render
+  // Derive match result during render to avoid effect timing issues.
   const matchResult = useMemo(() => matchRoute(pathname, routes), [pathname, routes])
 
-  // Update params when route changes (useEffect to avoid setState during render)
+  // Track previous match to detect route changes.
   const prevMatchRef = useRef(matchResult)
   const prevParamsRef = useRef<RouteParams>({})
+
+  // Update params when route changes.
+  // Uses useEffect to avoid setState during render.
   useEffect(() => {
     const currentParams = matchResult?.params ?? {}
     const prevParams = prevParamsRef.current
@@ -157,7 +164,7 @@ function RouteRenderer({
   }, [matchResult, updateParams])
 
   if (!matchResult) {
-    // No route matched - find most specific 404 for this path
+    // No route matched - find most specific 404 for this path.
     const NotFoundComponent = findNotFoundForPath(pathname, routes, rootNotFound)
     return <NotFoundComponent />
   }
@@ -165,7 +172,7 @@ function RouteRenderer({
   const { route } = matchResult
   const Component = route.component
 
-  // Wrap component with layouts if any exist
+  // Wrap component with layouts if any exist.
   if (route.layouts.length > 0) {
     return (
       <LayoutWrapper layouts={route.layouts}>
@@ -178,30 +185,31 @@ function RouteRenderer({
 }
 
 /**
- * File system router component
- * Automatically discovers and routes pages from the pages directory
+ * File system router component.
+ * Automatically discovers and routes pages from the pages directory.
  */
 export function FileSystemRouter(props: FileSystemRouterProps) {
   const { initialPath = "/", notFound } = props
 
-  // Extract explicit props for stable memoization - avoid depending on entire props object
+  // Extract explicit props for stable memoization.
+  // Avoids depending on entire props object which may change reference.
   const explicitPages = "pages" in props ? props.pages : undefined
   const explicitLayouts = "pages" in props ? props.layouts : undefined
   const explicitNotFounds =
     "pages" in props ? (props as { notFounds?: NotFounds }).notFounds : undefined
 
-  // Build routes from the pre-imported modules
+  // Build routes from the pre-imported modules.
   const { routes, rootNotFound } = useMemo(() => {
     if (explicitPages) {
-      // Advanced API: provide pre-loaded pages, layouts, and optional notFounds
+      // Advanced API: use provided pages, layouts, and optional notFounds.
       return buildRoutes(explicitPages, explicitLayouts ?? {}, explicitNotFounds ?? {})
     } else {
-      // Simple API: use the context-imported modules
+      // Simple API: use context-imported modules.
       return buildRoutes(pages, layouts, notFounds)
     }
   }, [explicitPages, explicitLayouts, explicitNotFounds])
 
-  // Allow override via prop, otherwise use root 404 from pages/404.tsx, or default
+  // Allow override via prop, otherwise use root 404 from pages/404.tsx, or default.
   const finalRootNotFound = notFound ?? rootNotFound ?? DefaultNotFound
 
   return (
@@ -212,7 +220,8 @@ export function FileSystemRouter(props: FileSystemRouterProps) {
 }
 
 /**
- * Generate routes from pages object (for advanced use cases)
+ * Generate routes from pages object (for advanced use cases).
+ * Allows manual route configuration when automatic discovery isn't suitable.
  */
 export function generateRoutes(pages: Pages, layouts: Layouts = {}, notFounds: NotFounds = {}) {
   return buildRoutes(pages, layouts, notFounds)

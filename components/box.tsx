@@ -2,6 +2,8 @@
  * Box Component
  *
  * Generic View wrapper with theme-aware styling via shorthand props.
+ * Provides a consistent API for spacing, colors, and layout without
+ * manually accessing theme values in every component.
  */
 
 import { memo } from "react"
@@ -20,7 +22,7 @@ type BackgroundToken = keyof SemanticColors["background"]
 type BorderColorToken = keyof SemanticColors["border"]
 
 export type BoxProps = ViewProps & {
-  // Padding
+  // Padding props - apply spacing tokens to padding.
   p?: SpacingToken | number
   px?: SpacingToken | number
   py?: SpacingToken | number
@@ -29,7 +31,7 @@ export type BoxProps = ViewProps & {
   pl?: SpacingToken | number
   pr?: SpacingToken | number
 
-  // Margin
+  // Margin props - apply spacing tokens to margin.
   m?: SpacingToken | number
   mx?: SpacingToken | number
   my?: SpacingToken | number
@@ -38,19 +40,19 @@ export type BoxProps = ViewProps & {
   ml?: SpacingToken | number
   mr?: SpacingToken | number
 
-  // Gap
+  // Gap props - apply spacing tokens to flexbox gap.
   gap?: SpacingToken | number
   rowGap?: SpacingToken | number
   columnGap?: SpacingToken | number
 
-  // Appearance
+  // Appearance props - semantic color and style tokens.
   bg?: BackgroundToken
   radius?: RadiusToken
   shadow?: ShadowToken
   borderWidth?: number
   borderColor?: BorderColorToken
 
-  // Layout
+  // Layout props - common flexbox shortcuts.
   flex?: number
   row?: boolean
   center?: boolean
@@ -62,7 +64,7 @@ export type BoxProps = ViewProps & {
 // =============================================================================
 
 export const Box = memo(function Box({
-  // Padding
+  // Padding.
   p,
   px,
   py,
@@ -70,7 +72,7 @@ export const Box = memo(function Box({
   pb,
   pl,
   pr,
-  // Margin
+  // Margin.
   m,
   mx,
   my,
@@ -78,37 +80,41 @@ export const Box = memo(function Box({
   mb,
   ml,
   mr,
-  // Gap
+  // Gap.
   gap,
   rowGap,
   columnGap,
-  // Appearance
+  // Appearance.
   bg,
   radius,
   shadow,
   borderWidth,
   borderColor,
-  // Layout
+  // Layout.
   flex,
   row,
   center,
-  // Rest
+  // Rest.
   style,
   children,
   ...rest
 }: BoxProps) {
   const theme = useThemeValue()
 
-  // Resolve spacing values
+  /**
+   * Resolve a spacing value from either a token key or raw number.
+   * Tokens provide consistent spacing from the design system.
+   */
   const resolveSpacing = (value: SpacingToken | number | undefined): number | undefined => {
     if (value === undefined) return undefined
     if (typeof value === "number") return value
     return theme.spacing[value]
   }
 
-  // Build style object
+  // Build style object from props.
+  // Order matches CSS shorthand precedence: specific overrides general.
   const boxStyle = {
-    // Padding
+    // Padding.
     padding: resolveSpacing(p),
     paddingHorizontal: resolveSpacing(px),
     paddingVertical: resolveSpacing(py),
@@ -116,7 +122,7 @@ export const Box = memo(function Box({
     paddingBottom: resolveSpacing(pb),
     paddingLeft: resolveSpacing(pl),
     paddingRight: resolveSpacing(pr),
-    // Margin
+    // Margin.
     margin: resolveSpacing(m),
     marginHorizontal: resolveSpacing(mx),
     marginVertical: resolveSpacing(my),
@@ -124,18 +130,18 @@ export const Box = memo(function Box({
     marginBottom: resolveSpacing(mb),
     marginLeft: resolveSpacing(ml),
     marginRight: resolveSpacing(mr),
-    // Gap
+    // Gap.
     gap: resolveSpacing(gap),
     rowGap: resolveSpacing(rowGap),
     columnGap: resolveSpacing(columnGap),
-    // Appearance
+    // Appearance.
     backgroundColor: bg ? theme.colors.background[bg] : undefined,
     borderRadius: radius !== undefined ? theme.radius[radius] : undefined,
     borderWidth,
     borderColor: borderColor ? theme.colors.border[borderColor] : undefined,
-    // Shadow
+    // Shadow (spread operator merges shadow definition).
     ...(shadow ? theme.shadows[shadow] : {}),
-    // Layout
+    // Layout.
     flex,
     flexDirection: row ? ("row" as const) : undefined,
     alignItems: center ? ("center" as const) : undefined,

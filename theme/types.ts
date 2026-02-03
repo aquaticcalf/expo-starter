@@ -223,14 +223,21 @@ export interface ZIndexScale {
 }
 
 /**
- * Animation duration scale
+ * Animation duration scale in milliseconds.
+ * Values chosen based on perceptual research: 100ms feels instant, 300ms feels deliberate.
  */
 export interface DurationScale {
+  /** 0ms - No animation, immediate state change. */
   instant: number
+  /** 100ms - Quick micro-interactions (button press, hover). */
   fast: number
+  /** 200ms - Standard transitions (fade, slide). */
   normal: number
+  /** 300ms - Deliberate animations (modal open). */
   slow: number
+  /** 500ms - Emphasized transitions. */
   slower: number
+  /** 1000ms - Long-form animations (skeleton loading). */
   slowest: number
 }
 

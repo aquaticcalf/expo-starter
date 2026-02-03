@@ -22,7 +22,7 @@ export default function App() {
         file: { filename: "app.jsonl" },
       })}
     >
-      {/* app content */}
+      {/* App content */}
     </LoggerProvider>
   )
 }
@@ -39,7 +39,7 @@ function MyComponent() {
   info("Component mounted", { component: "MyComponent" })
 
   try {
-    // some operation
+    // Some operation
   } catch (err) {
     error("Operation failed", err as Error, { component: "MyComponent" })
   }
@@ -83,7 +83,7 @@ export default function App() {
         default_rate: 0.05,  // 5% of everything else
       }}
     >
-      {/* app content */}
+      {/* App content */}
     </LoggerProvider>
   )
 }

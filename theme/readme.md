@@ -1,15 +1,15 @@
-# theme
+# Theme
 
-design token system for react native with light/dark mode support.
+Design token system for React Native with light/dark mode support.
 
-three tiers:
-- primitives → raw values (colors, numbers). never use directly
-- semantic tokens → meaning-based (`background.surface`, `foreground.muted`)
-- themes → complete set mapping semantics to primitives
+Three tiers:
+- Primitives → raw values (colors, numbers). Never use directly.
+- Semantic tokens → meaning-based (`background.surface`, `foreground.muted`)
+- Themes → complete set mapping semantics to primitives
 
-## setup
+## Setup
 
-### 1. wrap app with ThemeProvider
+### 1. Wrap app with ThemeProvider
 
 ```tsx
 // app.tsx
@@ -25,7 +25,7 @@ export default function App() {
 }
 ```
 
-### 2. use theme in components
+### 2. Use theme in components
 
 ```tsx
 import { View, Text } from "react-native"
@@ -55,11 +55,11 @@ export default function Card() {
 }
 ```
 
-## hooks
+## Hooks
 
 ### useTheme
 
-full theme context with mode switching.
+Full theme context with mode switching.
 
 ```tsx
 import { useTheme } from "@/theme"
@@ -76,7 +76,7 @@ function Component() {
 
 ### useThemedStyles
 
-create memoized stylesheets that update with theme.
+Create memoized stylesheets that update with theme.
 
 ```tsx
 import { useThemedStyles } from "@/theme"
@@ -103,7 +103,7 @@ function Component() {
 
 ### createThemedStyleSheet
 
-define styles outside components, returns a hook.
+Define styles outside components, returns a hook.
 
 ```tsx
 // styles.ts
@@ -125,7 +125,7 @@ function Component() {
 }
 ```
 
-### convenience hooks
+### Convenience Hooks
 
 ```tsx
 import {
@@ -147,54 +147,54 @@ function Component() {
 }
 ```
 
-## token reference
+## Token Reference
 
-### colors
+### Colors
 
-semantic color tokens organized by purpose.
+Semantic color tokens organized by purpose.
 
 ```tsx
 const { colors } = useTheme().theme
 
-// backgrounds
-colors.background.app          // main app background
-colors.background.surface      // card/component background
-colors.background.surfaceHover // hover state
-colors.background.elevated     // elevated surfaces (modals)
-colors.background.muted        // subtle backgrounds
-colors.background.inverse      // inverted background
+// Backgrounds
+colors.background.app          // Main app background
+colors.background.surface      // Card/component background
+colors.background.surfaceHover // Hover state
+colors.background.elevated     // Elevated surfaces (modals)
+colors.background.muted        // Subtle backgrounds
+colors.background.inverse      // Inverted background
 
-// foreground/text
-colors.foreground.default      // primary text
-colors.foreground.muted        // secondary text
-colors.foreground.subtle       // tertiary text
-colors.foreground.inverse      // text on inverse background
-colors.foreground.disabled     // disabled state
+// Foreground/text
+colors.foreground.default      // Primary text
+colors.foreground.muted        // Secondary text
+colors.foreground.subtle       // Tertiary text
+colors.foreground.inverse      // Text on inverse background
+colors.foreground.disabled     // Disabled state
 
-// brand
-colors.brand.default           // primary brand color
-colors.brand.hover             // hover state
-colors.brand.active            // pressed state
-colors.brand.subtle            // light brand background
-colors.brand.foreground        // text on brand color
+// Brand
+colors.brand.default           // Primary brand color
+colors.brand.hover             // Hover state
+colors.brand.active            // Pressed state
+colors.brand.subtle            // Light brand background
+colors.brand.foreground        // Text on brand color
 
-// borders
-colors.border.default          // standard borders
-colors.border.muted            // subtle borders
-colors.border.focus            // focus rings
+// Borders
+colors.border.default          // Standard borders
+colors.border.muted            // Subtle borders
+colors.border.focus            // Focus rings
 
-// status
-colors.success.default         // success states
-colors.warning.default         // warning states
-colors.error.default           // error states
-colors.info.default            // info states
+// Status
+colors.success.default         // Success states
+colors.warning.default         // Warning states
+colors.error.default           // Error states
+colors.info.default            // Info states
 
-// each status has: default, hover, active, subtle, muted, emphasis, foreground, border
+// Each status has: default, hover, active, subtle, muted, emphasis, foreground, border
 ```
 
-### spacing
+### Spacing
 
-4px base grid, following tailwind scale.
+4px base grid, following Tailwind scale.
 
 ```tsx
 const { spacing } = useTheme().theme
@@ -211,14 +211,14 @@ spacing[16]   // 64
 spacing[24]   // 96
 ```
 
-### typography
+### Typography
 
-font sizes with paired line heights.
+Font sizes with paired line heights.
 
 ```tsx
 const { typography } = useTheme().theme
 
-// scale (fontSize, lineHeight, letterSpacing)
+// Scale (fontSize, lineHeight, letterSpacing)
 typography.scale.xs      // { fontSize: 12, lineHeight: 16, letterSpacing: 0.4 }
 typography.scale.sm      // { fontSize: 14, lineHeight: 20, letterSpacing: 0.25 }
 typography.scale.base    // { fontSize: 16, lineHeight: 24, letterSpacing: 0 }
@@ -227,20 +227,20 @@ typography.scale.xl      // { fontSize: 20, lineHeight: 28, letterSpacing: 0 }
 typography.scale["2xl"]  // { fontSize: 24, lineHeight: 32, letterSpacing: 0 }
 typography.scale["3xl"]  // { fontSize: 30, lineHeight: 36, letterSpacing: 0 }
 
-// weights
+// Weights
 typography.weights.normal    // "400"
 typography.weights.medium    // "500"
 typography.weights.semibold  // "600"
 typography.weights.bold      // "700"
 
-// families
+// Families
 typography.families.sans     // "System"
 typography.families.mono     // "Menlo"
 ```
 
-### radius
+### Radius
 
-border radius scale.
+Border radius scale.
 
 ```tsx
 const { radius } = useTheme().theme
@@ -253,24 +253,24 @@ radius.xl     // 16
 radius.full   // 9999
 ```
 
-### shadows
+### Shadows
 
-elevation/shadow definitions for react native.
+Elevation/shadow definitions for React Native.
 
 ```tsx
 const { shadows } = useTheme().theme
 
-shadows.none  // no shadow
-shadows.sm    // subtle shadow
-shadows.md    // medium shadow
-shadows.lg    // large shadow
+shadows.none  // No shadow
+shadows.sm    // Subtle shadow
+shadows.md    // Medium shadow
+shadows.lg    // Large shadow
 
-// each shadow is: { shadowColor, shadowOffset, shadowOpacity, shadowRadius, elevation }
+// Each shadow is: { shadowColor, shadowOffset, shadowOpacity, shadowRadius, elevation }
 ```
 
-### sizes
+### Sizes
 
-common UI element sizes.
+Common UI element sizes.
 
 ```tsx
 const { sizes } = useTheme().theme
@@ -284,9 +284,24 @@ sizes.buttonMd     // 40
 sizes.buttonLg     // 48
 ```
 
-## dark mode
+## Duration (Animation Timing)
 
-### automatic system detection
+All duration values are in milliseconds.
+
+```tsx
+const { duration } = useTheme().theme
+
+duration.instant  // 0ms - No animation
+duration.fast     // 100ms - Micro-interactions
+duration.normal   // 200ms - Standard transitions
+duration.slow     // 300ms - Deliberate animations
+duration.slower   // 500ms - Emphasized transitions
+duration.slowest  // 1000ms - Long-form animations
+```
+
+## Dark Mode
+
+### Automatic System Detection
 
 ```tsx
 <ThemeProvider defaultMode="system">
@@ -294,7 +309,7 @@ sizes.buttonLg     // 48
 </ThemeProvider>
 ```
 
-### manual toggle
+### Manual Toggle
 
 ```tsx
 import { useTheme } from "@/theme"
@@ -311,17 +326,17 @@ function ThemeToggle() {
 }
 ```
 
-### set specific mode
+### Set Specific Mode
 
 ```tsx
 const { setThemeMode } = useTheme()
 
-setThemeMode("light")   // force light
-setThemeMode("dark")    // force dark
-setThemeMode("system")  // follow system
+setThemeMode("light")   // Force light
+setThemeMode("dark")    // Force dark
+setThemeMode("system")  // Follow system
 ```
 
-### persist preference
+### Persist Preference
 
 ```tsx
 import AsyncStorage from "@react-native-async-storage/async-storage"
@@ -346,9 +361,9 @@ function App() {
 }
 ```
 
-## custom themes
+## Custom Themes
 
-### override default themes
+### Override Default Themes
 
 ```tsx
 import { ThemeProvider, lightTheme, darkTheme } from "@/theme"
@@ -359,7 +374,7 @@ const customLight = {
     ...lightTheme.colors,
     brand: {
       ...lightTheme.colors.brand,
-      default: "#FF6B00", // custom brand color
+      default: "#FF6B00", // Custom brand color
     },
   },
 }
@@ -369,7 +384,7 @@ const customLight = {
 </ThemeProvider>
 ```
 
-### create theme from scratch
+### Create Theme From Scratch
 
 ```tsx
 import type { Theme } from "@/theme"
@@ -395,54 +410,54 @@ const customTheme: Theme = {
 }
 ```
 
-## api reference
+## API Reference
 
 ### ThemeProvider
 
-main provider component.
+Main provider component.
 
-| prop | type | default | description |
+| Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| defaultMode | `"light" \| "dark" \| "system"` | `"system"` | initial theme mode |
-| lightTheme | `Theme` | built-in | custom light theme |
-| darkTheme | `Theme` | built-in | custom dark theme |
-| onThemeModeChange | `(mode: ThemeMode) => void` | - | callback when mode changes |
-| children | `ReactNode` | required | app content |
+| defaultMode | `"light" \| "dark" \| "system"` | `"system"` | Initial theme mode |
+| lightTheme | `Theme` | built-in | Custom light theme |
+| darkTheme | `Theme` | built-in | Custom dark theme |
+| onThemeModeChange | `(mode: ThemeMode) => void` | - | Callback when mode changes |
+| children | `ReactNode` | required | App content |
 
-### useTheme return value
+### useTheme Return Value
 
-| property | type | description |
+| Property | Type | Description |
 |----------|------|-------------|
-| theme | `Theme` | current theme object |
-| themeMode | `ThemeMode` | current setting (light/dark/system) |
-| resolvedMode | `"light" \| "dark"` | actual mode after system resolution |
-| isDark | `boolean` | true if dark mode active |
-| setThemeMode | `(mode: ThemeMode) => void` | set theme mode |
-| toggleTheme | `() => void` | toggle between light/dark |
+| theme | `Theme` | Current theme object |
+| themeMode | `ThemeMode` | Current setting (light/dark/system) |
+| resolvedMode | `"light" \| "dark"` | Actual mode after system resolution |
+| isDark | `boolean` | True if dark mode active |
+| setThemeMode | `(mode: ThemeMode) => void` | Set theme mode |
+| toggleTheme | `() => void` | Toggle between light/dark |
 
-## module structure
+## Module Structure
 
 ```
 theme/
-├── index.ts          # barrel exports
-├── types.ts          # typescript interfaces
-├── primitives.ts     # raw token values
+├── index.ts          # Barrel exports
+├── types.ts          # TypeScript interfaces
+├── primitives.ts     # Raw token values
 ├── context.tsx       # ThemeProvider, context
 ├── hooks.ts          # useTheme, useThemedStyles, etc.
 ├── themes/
-│   ├── light.ts      # light theme
-│   └── dark.ts       # dark theme
-└── readme.md         # this file
+│   ├── light.ts      # Light theme
+│   └── dark.ts       # Dark theme
+└── readme.md         # This file
 ```
 
-## color scale reference
+## Color Scale Reference
 
-primitives use 12-step color scales (radix convention):
+Primitives use 12-step color scales (Radix convention):
 
-| step | use case |
+| Step | Use Case |
 |------|----------|
-| 1-2 | backgrounds |
-| 3-5 | component backgrounds (normal, hover, active) |
-| 6-8 | borders (subtle, normal, strong) |
-| 9-10 | solid backgrounds (normal, hover) |
-| 11-12 | text (low contrast, high contrast) |
+| 1-2 | Backgrounds |
+| 3-5 | Component backgrounds (normal, hover, active) |
+| 6-8 | Borders (subtle, normal, strong) |
+| 9-10 | Solid backgrounds (normal, hover) |
+| 11-12 | Text (low contrast, high contrast) |

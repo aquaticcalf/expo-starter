@@ -28,18 +28,18 @@ export type AvatarProps = {
 // =============================================================================
 
 type SizeConfig = {
-  container: number
+  containerSizePx: number
   fontSize: "caption" | "label-small" | "label" | "body" | "title"
-  statusSize: number
-  statusBorder: number
+  statusSizePx: number
+  statusBorderPx: number
 }
 
 const sizeConfig: Record<AvatarSize, SizeConfig> = {
-  xs: { container: 24, fontSize: "caption", statusSize: 8, statusBorder: 1 },
-  sm: { container: 32, fontSize: "label-small", statusSize: 10, statusBorder: 2 },
-  md: { container: 40, fontSize: "label", statusSize: 12, statusBorder: 2 },
-  lg: { container: 56, fontSize: "body", statusSize: 14, statusBorder: 2 },
-  xl: { container: 80, fontSize: "title", statusSize: 18, statusBorder: 3 },
+  xs: { containerSizePx: 24, fontSize: "caption", statusSizePx: 8, statusBorderPx: 1 },
+  sm: { containerSizePx: 32, fontSize: "label-small", statusSizePx: 10, statusBorderPx: 2 },
+  md: { containerSizePx: 40, fontSize: "label", statusSizePx: 12, statusBorderPx: 2 },
+  lg: { containerSizePx: 56, fontSize: "body", statusSizePx: 14, statusBorderPx: 2 },
+  xl: { containerSizePx: 80, fontSize: "title", statusSizePx: 18, statusBorderPx: 3 },
 }
 
 // =============================================================================
@@ -55,9 +55,9 @@ export const Avatar = memo(function Avatar({ size = "md", src, fallback, status 
   const initials = getInitials(fallback)
 
   const containerStyle = {
-    width: config.container,
-    height: config.container,
-    borderRadius: config.container / 2,
+    width: config.containerSizePx,
+    height: config.containerSizePx,
+    borderRadius: config.containerSizePx / 2,
     backgroundColor: theme.colors.brand.subtle,
   }
 
@@ -66,7 +66,7 @@ export const Avatar = memo(function Avatar({ size = "md", src, fallback, status 
       {showImage ? (
         <Image
           source={{ uri: src }}
-          style={[styles.image, { borderRadius: config.container / 2 }]}
+          style={[styles.image, { borderRadius: config.containerSizePx / 2 }]}
           onError={() => setImageError(true)}
         />
       ) : (
@@ -75,21 +75,21 @@ export const Avatar = memo(function Avatar({ size = "md", src, fallback, status 
         </Text>
       )}
 
-      {status && (
+      {status ? (
         <View
           style={[
             styles.status,
             {
-              width: config.statusSize,
-              height: config.statusSize,
-              borderRadius: config.statusSize / 2,
-              borderWidth: config.statusBorder,
+              width: config.statusSizePx,
+              height: config.statusSizePx,
+              borderRadius: config.statusSizePx / 2,
+              borderWidth: config.statusBorderPx,
               borderColor: theme.colors.background.surface,
               backgroundColor: getStatusColor(status, theme),
             },
           ]}
         />
-      )}
+      ) : null}
     </View>
   )
 })

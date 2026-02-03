@@ -3,24 +3,26 @@ import { RouterContext } from "./context"
 import type { NavigateOptions, RouteParams, RouterInstance } from "./types"
 
 /**
- * Hook to access the router context
- * Throws if used outside of RouterProvider
+ * Access the router context.
+ * Throws if used outside of RouterProvider to catch misuse early.
  */
 function useRouterContext() {
   const context = useContext(RouterContext)
   if (!context) {
-    throw new Error("useRouter must be used within a RouterProvider or FileSystemRouter")
+    throw new Error("useRouter must be used within a RouterProvider or FileSystemRouter.")
   }
   return context
 }
 
 /**
- * Hook to access the full router instance
+ * Access the full router instance with navigation methods.
+ * Returns a stable object reference when underlying values haven't changed.
  */
 export function useRouter(): RouterInstance {
   const context = useRouterContext()
 
-  // rerender-dependencies: depend on specific functions, not entire context object
+  // Destructure to depend on specific values, not the entire context object.
+  // This prevents re-renders when unrelated context values change.
   const { navigate, back, forward, pathname, params } = context
 
   const push = useCallback(
@@ -37,6 +39,7 @@ export function useRouter(): RouterInstance {
     [navigate],
   )
 
+  // Memoize the router instance to maintain referential equality.
   return useMemo<RouterInstance>(
     () => ({
       pathname,
@@ -51,7 +54,8 @@ export function useRouter(): RouterInstance {
 }
 
 /**
- * Hook to get route parameters
+ * Get route parameters extracted from the current path.
+ * Generic parameter allows type-safe access to expected params.
  */
 export function useParams<T extends RouteParams = RouteParams>(): T {
   const context = useRouterContext()
@@ -59,7 +63,8 @@ export function useParams<T extends RouteParams = RouteParams>(): T {
 }
 
 /**
- * Hook to get current pathname
+ * Get the current pathname.
+ * Returns the normalized path without query string.
  */
 export function usePathname(): string {
   const context = useRouterContext()
@@ -67,7 +72,8 @@ export function usePathname(): string {
 }
 
 /**
- * Hook to get navigate function
+ * Get the navigate function directly.
+ * Useful when you only need navigation without other router state.
  */
 export function useNavigate() {
   const context = useRouterContext()

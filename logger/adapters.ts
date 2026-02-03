@@ -2,11 +2,20 @@ import * as FileSystem from "expo-file-system"
 import { createConsoleAdapter, type LoggerAdapter } from "afterlog"
 import type { FileAdapterConfig } from "./types"
 
+// Default log directory within the app's document storage.
 const LOG_DIR = `${FileSystem.Paths.document.uri}logs/`
 
-// js-cache-function-results: Cache TextEncoder instance
+// Maximum log file size in bytes before rotation should occur.
+// TODO: Implement log rotation when this limit is reached.
+const _MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024 // 10MB
+
+// Reuse TextEncoder instance to avoid repeated allocations.
 const textEncoder = new TextEncoder()
 
+/**
+ * Ensure the log directory exists, creating it if necessary.
+ * Uses intermediates: true to create parent directories.
+ */
 async function ensureLogDirectory(): Promise<void> {
   const dir = new FileSystem.Directory(LOG_DIR)
   if (!dir.exists) {
@@ -14,22 +23,34 @@ async function ensureLogDirectory(): Promise<void> {
   }
 }
 
+/**
+ * Create a console log adapter with pretty printing enabled.
+ * Suitable for development environments.
+ */
 export function createConsoleLogAdapter() {
   return createConsoleAdapter({ pretty: true })
 }
 
+/**
+ * Create a file-based log adapter.
+ * Writes JSON lines to a file for structured log analysis.
+ */
 export async function createFileAdapter(config: FileAdapterConfig = {}): Promise<LoggerAdapter> {
   await ensureLogDirectory()
 
   const directory = config.directory ?? LOG_DIR
   const filename = config.filename ?? "app.jsonl"
   const filepath = `${directory}${filename}`
-  // maxFiles is reserved for future log rotation implementation
+  // maxFiles is reserved for future log rotation implementation.
   void config.maxFiles
 
   let fileHandle: FileSystem.FileHandle | null = null
   let currentFile: FileSystem.File | null = null
 
+  /**
+   * Get or create the file handle for writing.
+   * Lazily opens the file on first write.
+   */
   async function getFileHandle(): Promise<{
     file: FileSystem.File
     handle: FileSystem.FileHandle
@@ -51,7 +72,8 @@ export async function createFileAdapter(config: FileAdapterConfig = {}): Promise
         const { handle } = await getFileHandle()
         handle.writeBytes(textEncoder.encode(line))
       } catch {
-        console.error("[Logger] Failed to write log to file")
+        // Fail silently to avoid log errors causing app crashes.
+        console.error("[Logger] Failed to write log to file.")
       }
     },
 
@@ -79,16 +101,22 @@ export async function createFileAdapter(config: FileAdapterConfig = {}): Promise
   return fileAdapter
 }
 
+/**
+ * Create a hybrid adapter that writes to both console and file.
+ * Useful for development (console) with production logging (file).
+ */
 export async function createHybridAdapter(config?: {
   console?: boolean
   file?: FileAdapterConfig
 }): Promise<LoggerAdapter> {
   const adapters: LoggerAdapter[] = []
 
+  // Console adapter enabled by default.
   if (config?.console ?? true) {
     adapters.push(createConsoleLogAdapter())
   }
 
+  // File adapter enabled by default.
   if (config?.file ?? true) {
     const fileAdapter = await createFileAdapter(config?.file)
     adapters.push(fileAdapter)
@@ -96,6 +124,7 @@ export async function createHybridAdapter(config?: {
 
   return {
     async emit(event: Record<string, unknown>) {
+      // Write to all adapters in parallel for performance.
       await Promise.all(adapters.map((adapter) => adapter.emit(event)))
     },
     async flush() {
@@ -105,6 +134,7 @@ export async function createHybridAdapter(config?: {
       await Promise.all(adapters.map((adapter) => adapter.destroy?.()))
     },
     isHealthy() {
+      // Healthy only if all adapters are healthy.
       return adapters.every((adapter) => adapter.isHealthy?.() ?? true)
     },
   }

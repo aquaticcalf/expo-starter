@@ -2,6 +2,8 @@
  * Text Component
  *
  * Typography primitive with semantic variants and theme integration.
+ * Provides consistent text styling across the app through variant-based
+ * configuration rather than manual font size and weight specification.
  */
 
 import { memo } from "react"
@@ -51,6 +53,9 @@ export type TextProps = Omit<RNTextProps, "style"> & {
 
 // =============================================================================
 // VARIANT MAPPINGS
+// Mapping from semantic variants to typography scale tokens.
+// This indirection allows changing the visual appearance without
+// updating every component that uses a variant.
 // =============================================================================
 
 const variantToScale: Record<TextVariant, "xs" | "sm" | "base" | "lg" | "xl" | "2xl" | "3xl"> = {
@@ -67,6 +72,7 @@ const variantToScale: Record<TextVariant, "xs" | "sm" | "base" | "lg" | "xl" | "
   headline: "3xl",
 }
 
+// Default weights per variant to ensure visual hierarchy.
 const variantToWeight: Record<TextVariant, TextWeight> = {
   caption: "normal",
   "body-small": "normal",
@@ -96,14 +102,14 @@ export const Text = memo(function Text({
 }: TextProps) {
   const theme = useThemeValue()
 
-  // Get typography scale based on variant
+  // Get typography scale based on variant.
   const scale = variantToScale[variant]
   const typography = theme.typography.scale[scale]
 
-  // Get color from theme
+  // Get color from theme.
   const textColor = getTextColor(color, theme)
 
-  // Get font weight (prop overrides variant default)
+  // Weight prop overrides variant default for flexibility.
   const fontWeight = theme.typography.weights[weight ?? variantToWeight[variant]]
 
   return (
@@ -131,6 +137,10 @@ export const Text = memo(function Text({
 // HELPERS
 // =============================================================================
 
+/**
+ * Resolve a semantic color name to an actual color value from the theme.
+ * Status colors (error, success, etc.) use the default shade from their scale.
+ */
 function getTextColor(color: TextColor, theme: ReturnType<typeof useThemeValue>): string {
   switch (color) {
     case "default":

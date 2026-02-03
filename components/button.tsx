@@ -2,7 +2,10 @@
  * Button Component
  *
  * Interactive button with variants, sizes, and color schemes.
- * Uses Pressable for animated feedback.
+ * Uses Pressable for animated feedback on press.
+ *
+ * Design rationale: Button styles are computed at render time rather than
+ * pre-computed because the theme may change dynamically (dark mode toggle).
  */
 
 import { memo } from "react"
@@ -34,37 +37,38 @@ export type ButtonProps = Omit<PressableProps, "children"> & {
 
 // =============================================================================
 // SIZE CONFIGURATION
+// Height and padding values follow 8px grid for visual consistency.
 // =============================================================================
 
 type SizeConfig = {
-  height: number
-  paddingHorizontal: number
+  heightPx: number
+  paddingHorizontalPx: number
   fontSize: "body-small" | "body" | "body-large"
   iconSize: "sm" | "md" | "lg"
-  gap: number
+  gapPx: number
 }
 
 const sizeConfig: Record<ButtonSize, SizeConfig> = {
   sm: {
-    height: 32,
-    paddingHorizontal: 12,
+    heightPx: 32,
+    paddingHorizontalPx: 12,
     fontSize: "body-small",
     iconSize: "sm",
-    gap: 6,
+    gapPx: 6,
   },
   md: {
-    height: 40,
-    paddingHorizontal: 16,
+    heightPx: 40,
+    paddingHorizontalPx: 16,
     fontSize: "body",
     iconSize: "md",
-    gap: 8,
+    gapPx: 8,
   },
   lg: {
-    height: 48,
-    paddingHorizontal: 20,
+    heightPx: 48,
+    paddingHorizontalPx: 20,
     fontSize: "body-large",
     iconSize: "lg",
-    gap: 10,
+    gapPx: 10,
   },
 }
 
@@ -87,12 +91,12 @@ export const Button = memo(function Button({
   const theme = useThemeValue()
   const config = sizeConfig[size]
 
-  // Get colors based on variant and color scheme
+  // Get colors based on variant and color scheme.
   const colors = getButtonColors(variant, colorScheme, disabled, theme)
 
   const buttonStyle = {
-    height: config.height,
-    paddingHorizontal: config.paddingHorizontal,
+    height: config.heightPx,
+    paddingHorizontal: config.paddingHorizontalPx,
     borderRadius: theme.radius.md,
     backgroundColor: colors.background,
     borderWidth: variant === "outline" ? 1 : 0,
@@ -101,7 +105,7 @@ export const Button = memo(function Button({
 
   const isDisabled = disabled || loading
 
-  // Flatten style prop
+  // Flatten style prop to ensure consistent array format.
   const flatStyle = Array.isArray(style) ? style : style ? [style] : []
 
   return (
@@ -112,7 +116,7 @@ export const Button = memo(function Button({
       scaleOnPress={isDisabled ? 1 : 0.97}
       {...rest}
     >
-      <View style={[styles.content, { gap: config.gap }]}>
+      <View style={[styles.content, { gap: config.gapPx }]}>
         {loading ? (
           <Spinner
             size="sm"
@@ -156,6 +160,7 @@ export const Button = memo(function Button({
 
 // =============================================================================
 // STYLES
+// Static styles that don't depend on props or theme.
 // =============================================================================
 
 const styles = StyleSheet.create({
@@ -173,6 +178,7 @@ const styles = StyleSheet.create({
 
 // =============================================================================
 // HELPERS
+// Color resolution functions for button states.
 // =============================================================================
 
 type ButtonColors = {
@@ -180,6 +186,10 @@ type ButtonColors = {
   border: string | undefined
 }
 
+/**
+ * Get background and border colors for a button based on variant, scheme, and state.
+ * Returns undefined for transparent backgrounds to avoid overriding parent styles.
+ */
 function getButtonColors(
   variant: ButtonVariant,
   colorScheme: ButtonColorScheme,
@@ -193,7 +203,7 @@ function getButtonColors(
     }
   }
 
-  // Handle neutral separately
+  // Handle neutral separately (uses gray scale instead of status colors).
   if (colorScheme === "neutral") {
     const schemeColors = {
       solid: theme.colors.background.inverse,
@@ -213,7 +223,7 @@ function getButtonColors(
     }
   }
 
-  // Handle brand separately (no border property)
+  // Handle brand separately (uses brand scale instead of status colors).
   if (colorScheme === "brand") {
     const schemeColors = {
       solid: theme.colors.brand.default,
@@ -233,7 +243,7 @@ function getButtonColors(
     }
   }
 
-  // Status colors (success, warning, error, info) have border property
+  // Status colors (success, warning, error, info) have border property.
   const statusColors = theme.colors[colorScheme]
   const schemeColors = {
     solid: statusColors.default,
@@ -253,17 +263,23 @@ function getButtonColors(
   }
 }
 
+/**
+ * Get text color for button content based on variant, scheme, and state.
+ */
 function getTextColor(
   variant: ButtonVariant,
   colorScheme: ButtonColorScheme,
   disabled: boolean,
 ): "default" | "muted" | "inverse" | "brand" | "error" | "success" | "warning" | "info" {
   if (disabled) return "muted"
-  if (variant === "solid") return colorScheme === "neutral" ? "inverse" : "inverse"
+  if (variant === "solid") return "inverse"
   if (colorScheme === "neutral") return "default"
   return colorScheme
 }
 
+/**
+ * Get icon color for button icons based on variant, scheme, and state.
+ */
 function getIconColor(
   variant: ButtonVariant,
   colorScheme: ButtonColorScheme,

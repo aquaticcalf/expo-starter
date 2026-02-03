@@ -37,16 +37,16 @@ export type InputProps = Omit<TextInputProps, "style"> & {
 // =============================================================================
 
 type SizeConfig = {
-  height: number
-  paddingHorizontal: number
-  fontSize: number
+  heightPx: number
+  paddingHorizontalPx: number
+  fontSizePx: number
   iconSize: "sm" | "md" | "lg"
 }
 
 const sizeConfig: Record<InputSize, SizeConfig> = {
-  sm: { height: 32, paddingHorizontal: 10, fontSize: 14, iconSize: "sm" },
-  md: { height: 40, paddingHorizontal: 12, fontSize: 16, iconSize: "md" },
-  lg: { height: 48, paddingHorizontal: 16, fontSize: 18, iconSize: "lg" },
+  sm: { heightPx: 32, paddingHorizontalPx: 10, fontSizePx: 14, iconSize: "sm" },
+  md: { heightPx: 40, paddingHorizontalPx: 12, fontSizePx: 16, iconSize: "md" },
+  lg: { heightPx: 48, paddingHorizontalPx: 16, fontSizePx: 18, iconSize: "lg" },
 }
 
 // =============================================================================
@@ -109,10 +109,10 @@ export const Input = memo(function Input({
   const backgroundColor =
     variant === "filled" ? theme.colors.background.muted : theme.colors.background.surface
 
-  // Container style based on variant
+  // Container style based on variant.
   const containerStyle = {
-    height: config.height,
-    paddingHorizontal: config.paddingHorizontal,
+    height: config.heightPx,
+    paddingHorizontal: config.paddingHorizontalPx,
     backgroundColor: variant === "flushed" ? "transparent" : backgroundColor,
     borderRadius: variant === "flushed" ? 0 : theme.radius.md,
     borderWidth: variant === "flushed" ? 0 : 1,
@@ -148,7 +148,7 @@ export const Input = memo(function Input({
           style={[
             styles.input,
             {
-              fontSize: config.fontSize,
+              fontSize: config.fontSizePx,
               color: theme.colors.foreground.default,
               paddingLeft: leftIcon ? 8 : 0,
               paddingRight: rightIcon || showClearButton ? 8 : 0,
@@ -171,11 +171,11 @@ export const Input = memo(function Input({
         )}
       </View>
 
-      {errorMessage && error && (
+      {errorMessage && error ? (
         <Text variant="caption" color="error" style={styles.errorMessage}>
           {errorMessage}
         </Text>
-      )}
+      ) : null}
     </View>
   )
 })

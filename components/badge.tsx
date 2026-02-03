@@ -29,15 +29,15 @@ export type BadgeProps = {
 // =============================================================================
 
 type SizeConfig = {
-  paddingHorizontal: number
-  paddingVertical: number
+  paddingHorizontalPx: number
+  paddingVerticalPx: number
   fontSize: "caption" | "label-small" | "label"
 }
 
 const sizeConfig: Record<BadgeSize, SizeConfig> = {
-  sm: { paddingHorizontal: 6, paddingVertical: 2, fontSize: "caption" },
-  md: { paddingHorizontal: 8, paddingVertical: 3, fontSize: "label-small" },
-  lg: { paddingHorizontal: 10, paddingVertical: 4, fontSize: "label" },
+  sm: { paddingHorizontalPx: 6, paddingVerticalPx: 2, fontSize: "caption" },
+  md: { paddingHorizontalPx: 8, paddingVerticalPx: 3, fontSize: "label-small" },
+  lg: { paddingHorizontalPx: 10, paddingVerticalPx: 4, fontSize: "label" },
 }
 
 // =============================================================================
@@ -57,8 +57,8 @@ export const Badge = memo(function Badge({
   const colors = getBadgeColors(variant, colorScheme, theme)
 
   const badgeStyle = {
-    paddingHorizontal: config.paddingHorizontal,
-    paddingVertical: config.paddingVertical,
+    paddingHorizontal: config.paddingHorizontalPx,
+    paddingVertical: config.paddingVerticalPx,
     borderRadius: theme.radius.sm,
     backgroundColor: colors.background,
     borderWidth: variant === "outline" ? 1 : 0,

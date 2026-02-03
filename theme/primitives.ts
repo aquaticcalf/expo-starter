@@ -753,16 +753,17 @@ export const zIndex: ZIndexScale = {
 }
 
 // =============================================================================
-// DURATION PRIMITIVES (in milliseconds)
+// DURATION PRIMITIVES
+// All values are in milliseconds. Named semantically by perceived speed.
 // =============================================================================
 
 export const duration: DurationScale = {
-  instant: 0,
-  fast: 100,
-  normal: 200,
-  slow: 300,
-  slower: 500,
-  slowest: 1000,
+  instant: 0, // No animation.
+  fast: 100, // Micro-interactions (hover, press feedback).
+  normal: 200, // Standard transitions (fade in/out).
+  slow: 300, // Deliberate animations (modal, drawer).
+  slower: 500, // Emphasized transitions.
+  slowest: 1000, // Long-form animations (skeleton, progress).
 }
 
 // =============================================================================
