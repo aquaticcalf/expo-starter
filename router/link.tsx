@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { Pressable } from "react-native"
+import { Pressable } from "@/components"
 import type { LinkProps } from "./types"
 import { useNavigate } from "./hooks"
 

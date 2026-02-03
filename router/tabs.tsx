@@ -1,5 +1,5 @@
 import { memo, useCallback, type ReactNode } from "react"
-import { Pressable, StyleSheet, Text, View } from "react-native"
+import { Box, Flex, Text, Pressable } from "@/components"
 import { useNavigate, usePathname } from "./hooks"
 
 /**
@@ -24,42 +24,7 @@ export interface TabsProps {
   tabs: TabItem[]
   /** Content to render (usually children from layout) */
   children: ReactNode
-  /** Active tab tint color */
-  activeTintColor?: string
-  /** Inactive tab tint color */
-  inactiveTintColor?: string
 }
-
-// rendering-hoist-jsx: extract static styles outside component
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-  },
-  tabBar: {
-    flexDirection: "row",
-    backgroundColor: "#ffffff",
-    borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
-    paddingBottom: 20,
-    paddingTop: 8,
-  },
-  tab: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 8,
-  },
-  tabLabel: {
-    fontSize: 12,
-    marginTop: 4,
-  },
-  activeLabel: {
-    fontWeight: "600",
-  },
-})
 
 /**
  * Individual tab button - memoized to prevent re-renders
@@ -68,27 +33,23 @@ const styles = StyleSheet.create({
 const TabButton = memo(function TabButton({
   tab,
   active,
-  tintColor,
   onPress,
 }: {
   tab: TabItem
   active: boolean
-  tintColor: string
   onPress: () => void
 }) {
   // rendering-conditional-render: use ternary not &&
   const icon = active && tab.activeIcon ? tab.activeIcon : tab.icon
 
   return (
-    <Pressable style={styles.tab} onPress={onPress}>
+    <Pressable onPress={onPress} style={{ flex: 1, alignItems: "center", paddingVertical: 8 }}>
       {icon}
       <Text
-        style={[
-          styles.tabLabel,
-          { color: tintColor },
-          // rendering-conditional-render: use ternary for conditional styles
-          active ? styles.activeLabel : null,
-        ]}
+        variant="caption"
+        weight={active ? "semibold" : "normal"}
+        color={active ? "brand" : "subtle"}
+        style={{ marginTop: 4 }}
       >
         {tab.label}
       </Text>
@@ -120,12 +81,7 @@ const TabButton = memo(function TabButton({
  * }
  * ```
  */
-export function Tabs({
-  tabs,
-  children,
-  activeTintColor = "#007AFF",
-  inactiveTintColor = "#8E8E93",
-}: TabsProps) {
+export function Tabs({ tabs, children }: TabsProps) {
   const pathname = usePathname()
   const navigate = useNavigate()
 
@@ -150,26 +106,29 @@ export function Tabs({
   )
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>{children}</View>
-      <View style={styles.tabBar}>
+    <Box flex={1}>
+      <Box flex={1}>{children}</Box>
+      <Flex
+        direction="row"
+        bg="surface"
+        borderColor="muted"
+        style={{ borderTopWidth: 1, paddingBottom: 20, paddingTop: 8 }}
+      >
         {tabs.map((tab) => {
           const active = isTabActive(tab.href)
-          const tintColor = active ? activeTintColor : inactiveTintColor
 
           return (
             <TabButton
               key={tab.href}
               tab={tab}
               active={active}
-              tintColor={tintColor}
               // Using arrow function here is acceptable because TabButton is memoized
               // and will only re-render when its props change
               onPress={() => handleTabPress(tab.href)}
             />
           )
         })}
-      </View>
-    </View>
+      </Flex>
+    </Box>
   )
 }

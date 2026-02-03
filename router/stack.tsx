@@ -1,5 +1,5 @@
 import { memo, useCallback, type ReactNode } from "react"
-import { Pressable, StyleSheet, Text, View } from "react-native"
+import { Box, Flex, Text, Pressable, Icon } from "@/components"
 import { useRouter } from "./hooks"
 
 /**
@@ -18,10 +18,6 @@ export interface StackScreenOptions {
   headerRight?: ReactNode
   /** Custom header title component */
   headerTitle?: ReactNode
-  /** Header background color */
-  headerBackgroundColor?: string
-  /** Header tint color (affects back button and title) */
-  headerTintColor?: string
 }
 
 /**
@@ -44,56 +40,6 @@ export interface StackScreenProps {
   options?: StackScreenOptions
 }
 
-// rendering-hoist-jsx: extract static styles outside component
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    height: 56,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-    paddingHorizontal: 16,
-  },
-  headerLeft: {
-    width: 60,
-    alignItems: "flex-start",
-    justifyContent: "center",
-  },
-  headerCenter: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerRight: {
-    width: 60,
-    alignItems: "flex-end",
-    justifyContent: "center",
-  },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: "600",
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backButtonText: {
-    fontSize: 17,
-    marginLeft: 4,
-  },
-  backArrow: {
-    fontSize: 20,
-    fontWeight: "300",
-  },
-  content: {
-    flex: 1,
-  },
-})
-
 // rerender-memo-with-default-value: hoist default non-primitive prop
 const DEFAULT_SCREEN_OPTIONS: StackScreenOptions = {}
 
@@ -101,17 +47,13 @@ const DEFAULT_SCREEN_OPTIONS: StackScreenOptions = {}
  * Default back button component
  * rerender-memo: memoized to prevent re-renders
  */
-const DefaultBackButton = memo(function DefaultBackButton({
-  tintColor = "#007AFF",
-  onPress,
-}: {
-  tintColor?: string
-  onPress: () => void
-}) {
+const DefaultBackButton = memo(function DefaultBackButton({ onPress }: { onPress: () => void }) {
   return (
-    <Pressable style={styles.backButton} onPress={onPress}>
-      <Text style={[styles.backArrow, { color: tintColor }]}>&lt;</Text>
-      <Text style={[styles.backButtonText, { color: tintColor }]}>Back</Text>
+    <Pressable onPress={onPress} style={{ flexDirection: "row", alignItems: "center" }}>
+      <Icon name="chevron-left" size="lg" color="brand" />
+      <Text variant="body" color="brand">
+        Back
+      </Text>
     </Pressable>
   )
 })
@@ -130,8 +72,6 @@ const DefaultBackButton = memo(function DefaultBackButton({
  *     <Stack
  *       screenOptions={{
  *         headerShown: true,
- *         headerBackgroundColor: "#ffffff",
- *         headerTintColor: "#007AFF",
  *       }}
  *     >
  *       {children}
@@ -154,8 +94,6 @@ export function Stack({
     headerLeft,
     headerRight,
     headerTitle,
-    headerBackgroundColor = "#ffffff",
-    headerTintColor = "#007AFF",
   } = screenOptions
 
   const canGoBack = true // In a real implementation, check history length
@@ -166,7 +104,7 @@ export function Stack({
   }, [router])
 
   if (!headerShown) {
-    return <View style={styles.container}>{children}</View>
+    return <Box flex={1}>{children}</Box>
   }
 
   // rendering-conditional-render: use ternary not &&
@@ -174,25 +112,40 @@ export function Stack({
     headerLeft !== undefined ? (
       headerLeft
     ) : headerBackVisible && canGoBack ? (
-      <DefaultBackButton tintColor={headerTintColor} onPress={handleBack} />
+      <DefaultBackButton onPress={handleBack} />
     ) : null
 
   const headerTitleContent =
     headerTitle !== undefined ? (
       headerTitle
     ) : title ? (
-      <Text style={[styles.headerTitle, { color: headerTintColor }]}>{title}</Text>
+      <Text variant="body" weight="semibold" color="default">
+        {title}
+      </Text>
     ) : null
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.header, { backgroundColor: headerBackgroundColor }]}>
-        <View style={styles.headerLeft}>{headerLeftContent}</View>
-        <View style={styles.headerCenter}>{headerTitleContent}</View>
-        <View style={styles.headerRight}>{headerRight}</View>
-      </View>
-      <View style={styles.content}>{children}</View>
-    </View>
+    <Box flex={1}>
+      <Flex
+        direction="row"
+        align="center"
+        bg="surface"
+        borderColor="muted"
+        px={4}
+        style={{ height: 56, borderBottomWidth: 1 }}
+      >
+        <Box style={{ width: 60, alignItems: "flex-start", justifyContent: "center" }}>
+          {headerLeftContent}
+        </Box>
+        <Box flex={1} center>
+          {headerTitleContent}
+        </Box>
+        <Box style={{ width: 60, alignItems: "flex-end", justifyContent: "center" }}>
+          {headerRight}
+        </Box>
+      </Flex>
+      <Box flex={1}>{children}</Box>
+    </Box>
   )
 }
 

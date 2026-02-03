@@ -14,11 +14,8 @@ const TAB_CONFIG: TabItem[] = [
  *
  * Pages inside this (tabs) group will have bottom tab navigation.
  * Configure your tabs by updating the TAB_CONFIG array above.
+ * Colors are handled by the theme system.
  */
 export default function TabsLayout({ children }: LayoutProps) {
-  return (
-    <Tabs tabs={TAB_CONFIG} activeTintColor="#007AFF" inactiveTintColor="#8E8E93">
-      {children}
-    </Tabs>
-  )
+  return <Tabs tabs={TAB_CONFIG}>{children}</Tabs>
 }

@@ -6,8 +6,6 @@ import { Stack } from "@/router/stack"
 const SCREEN_OPTIONS: StackScreenOptions = {
   headerShown: true,
   headerBackVisible: true,
-  headerBackgroundColor: "#ffffff",
-  headerTintColor: "#007AFF",
 }
 
 /**
@@ -15,6 +13,7 @@ const SCREEN_OPTIONS: StackScreenOptions = {
  *
  * Pages inside this (stack) group will have a header with back navigation.
  * Configure the header options by updating the SCREEN_OPTIONS object above.
+ * Colors are handled by the theme system.
  */
 export default function StackLayout({ children }: LayoutProps) {
   return <Stack screenOptions={SCREEN_OPTIONS}>{children}</Stack>
