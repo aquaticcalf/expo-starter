@@ -17,8 +17,6 @@ import type {
 } from "./types"
 import { buildRoutes, is404Page, isLayoutFile, matchRoute } from "./utils"
 
-
-
 /**
  * Import all page modules using require.context.
  * This enables automatic route discovery at build time.
@@ -67,8 +65,8 @@ function DefaultNotFound() {
   const navigate = useNavigate()
 
   return (
-    <Flex flex={1} align="center" justify="center" gap={20} >
-      <Flex align="center" gap={2} >
+    <Flex flex={1} align="center" justify="center" gap={20}>
+      <Flex align="center" gap={2}>
         <Text variant="headline" color="default">
           404
         </Text>
@@ -76,36 +74,52 @@ function DefaultNotFound() {
           Page not found
         </Text>
       </Flex>
-      <Button onPress={() => navigate("/")}>
-        Go Home
-      </Button>
+      <Button onPress={() => navigate("/")}>Go Home</Button>
     </Flex>
   )
 }
 
 /**
- * Find the most specific 404 component for a pathname.
- * Walks up the path hierarchy to find the nearest 404 handler.
- * E.g., /users/123/not-exist -> look for ./pages/users/404, then ./pages/404.
+ * Find the most specific 404 component and its layouts for a pathname.
+ * Walks up the path hierarchy to find the nearest 404 handler and all applicable layouts.
+ * Parent-level notFound prop takes precedence if provided.
  */
 function findNotFoundForPath(
   pathname: string,
-  routes: Route[],
-  rootNotFound: NotFoundComponent | null,
-): NotFoundComponent {
+  notFounds: NotFounds,
+  layoutMap: Map<string, Layout>,
+  parentNotFound?: NotFoundComponent,
+): { notFound: NotFoundComponent; layouts: Layout[] } {
+  const layouts: Layout[] = []
+  let routeNotFound: NotFoundComponent | null = parentNotFound ?? null
+
+  const notFoundMap = new Map<string, NotFoundComponent>()
+  for (const [key, module] of Object.entries(notFounds)) {
+    const dir = key.replace(/\/404\.(jsx|tsx)$/, "")
+    notFoundMap.set(dir, module.default)
+  }
+
   const pathParts = pathname.split("/").filter(Boolean)
 
-  // Check from most specific to least specific path.
-  for (let i = pathParts.length; i >= 0; i--) {
-    const testPath = "/" + pathParts.slice(0, i).join("/")
-    const match = matchRoute(testPath, routes)
-    if (match && match.route.notFound) {
-      return match.route.notFound
+  let currentPath = "./pages"
+  if (layoutMap.has(currentPath)) {
+    layouts.push(layoutMap.get(currentPath)!)
+  }
+  if (!routeNotFound && notFoundMap.has(currentPath)) {
+    routeNotFound = notFoundMap.get(currentPath)!
+  }
+
+  for (let i = 0; i < pathParts.length; i++) {
+    currentPath += `/${pathParts[i]}`
+    if (layoutMap.has(currentPath)) {
+      layouts.push(layoutMap.get(currentPath)!)
+    }
+    if (!routeNotFound && notFoundMap.has(currentPath)) {
+      routeNotFound = notFoundMap.get(currentPath)!
     }
   }
 
-  // Fall back to root 404 or default.
-  return rootNotFound ?? DefaultNotFound
+  return { notFound: routeNotFound ?? DefaultNotFound, layouts }
 }
 
 /**
@@ -124,10 +138,14 @@ function LayoutWrapper({ layouts, children }: { layouts: Layout[]; children: Rea
  */
 function RouteRenderer({
   routes,
-  rootNotFound,
+  notFounds,
+  layoutMap,
+  parentNotFound,
 }: {
   routes: Route[]
-  rootNotFound: NotFoundComponent | null
+  notFounds: NotFounds
+  layoutMap: Map<string, Layout>
+  parentNotFound?: NotFoundComponent
 }) {
   const context = useContext(RouterContext)
 
@@ -161,8 +179,20 @@ function RouteRenderer({
   }, [matchResult, updateParams])
 
   if (!matchResult) {
-    // No route matched - find most specific 404 for this path.
-    const NotFoundComponent = findNotFoundForPath(pathname, routes, rootNotFound)
+    // No route matched - find most specific 404 and its layouts for this path.
+    const { notFound: NotFoundComponent, layouts } = findNotFoundForPath(
+      pathname,
+      notFounds,
+      layoutMap,
+      parentNotFound,
+    )
+    if (layouts.length > 0) {
+      return (
+        <LayoutWrapper layouts={layouts}>
+          <NotFoundComponent />
+        </LayoutWrapper>
+      )
+    }
     return <NotFoundComponent />
   }
 
@@ -196,7 +226,7 @@ export function FileSystemRouter(props: FileSystemRouterProps) {
     "pages" in props ? (props as { notFounds?: NotFounds }).notFounds : undefined
 
   // Build routes from the pre-imported modules.
-  const { routes, rootNotFound } = useMemo(() => {
+  const { routes } = useMemo(() => {
     if (explicitPages) {
       // Advanced API: use provided pages, layouts, and optional notFounds.
       return buildRoutes(explicitPages, explicitLayouts ?? {}, explicitNotFounds ?? {})
@@ -206,12 +236,26 @@ export function FileSystemRouter(props: FileSystemRouterProps) {
     }
   }, [explicitPages, explicitLayouts, explicitNotFounds])
 
-  // Allow override via prop, otherwise use root 404 from pages/404.tsx, or default.
-  const finalRootNotFound = notFound ?? rootNotFound ?? DefaultNotFound
+  // Build layout map for 404 layout lookup.
+  const layoutMap = useMemo(() => {
+    const map = new Map<string, Layout>()
+    for (const [key, module] of Object.entries(explicitLayouts ?? layouts)) {
+      const dir = key.replace(/\/\+layout\.(jsx|tsx)$/, "")
+      map.set(dir, module.default)
+    }
+    return map
+  }, [explicitLayouts, layouts])
+
+  const finalNotFounds = explicitNotFounds ?? notFounds
 
   return (
     <RouterProvider initialPath={initialPath}>
-      <RouteRenderer routes={routes} rootNotFound={finalRootNotFound} />
+      <RouteRenderer
+        routes={routes}
+        notFounds={finalNotFounds}
+        layoutMap={layoutMap}
+        parentNotFound={notFound}
+      />
     </RouterProvider>
   )
 }

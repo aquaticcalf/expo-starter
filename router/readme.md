@@ -312,7 +312,7 @@ function Component() {
 
 ## Custom 404 Pages (Nested)
 
-404 pages work at any directory level. The most specific 404 is used for unmatched routes in that section.
+404 pages work at any directory level. The most specific 404 is used for unmatched routes in that section. 404 pages are automatically wrapped with layouts from their directory hierarchy, just like regular pages.
 
 ### Nested 404 Structure
 
@@ -384,6 +384,36 @@ function CustomNotFound() {
 }
 
 <FileSystemRouter notFound={CustomNotFound} />
+```
+
+### 404 Pages with Layouts
+
+404 pages are automatically wrapped with layouts from their directory hierarchy, just like regular pages.
+
+```
+pages/
+├── +layout.tsx                → Root layout (wraps everything)
+├── 404.tsx                    → Uses root layout
+└── users/
+    ├── +layout.tsx            → Users layout
+    ├── index.tsx              → /users
+    └── 404.tsx                → Uses root layout → users layout
+```
+
+Rendering `/unknown-route`:
+```
+<RootLayout>
+  <NotFound />
+</RootLayout>
+```
+
+Rendering `/users/999/not-found`:
+```
+<RootLayout>
+  <UsersLayout>
+    <UserNotFound />
+  </UsersLayout>
+</RootLayout>
 ```
 
 ## Initial Path
