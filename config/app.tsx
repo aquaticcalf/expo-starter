@@ -1,21 +1,31 @@
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context"
+import { StatusBar } from "expo-status-bar"
 import { StyleSheet } from "react-native"
 import { FileSystemRouter } from "@/router"
-import { ThemeProvider } from "@/theme"
+import { ThemeProvider, useColors, useIsDark } from "@/theme"
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-})
+function AppContent() {
+  const isDark = useIsDark()
+  const colors = useColors()
+
+  return (
+    <>
+      <StatusBar style={isDark ? "light" : "dark"} />
+      <SafeAreaView
+        style={[StyleSheet.absoluteFill, { backgroundColor: colors.background.app }]}
+        edges={[]}
+      >
+        <FileSystemRouter />
+      </SafeAreaView>
+    </>
+  )
+}
 
 export default function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-          <FileSystemRouter />
-        </SafeAreaView>
+        <AppContent />
       </ThemeProvider>
     </SafeAreaProvider>
   )
