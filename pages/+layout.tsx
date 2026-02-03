@@ -12,9 +12,7 @@ export default function RootLayout({ children }: LayoutProps) {
       paddingHorizontal: theme.spacing[4],
       paddingTop: theme.spacing[2],
       paddingBottom: theme.spacing[4],
-      backgroundColor: theme.colors.background.surface,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.border.default,
+      backgroundColor: theme.colors.background.app,
     },
     headerText: {
       ...theme.typography.scale.xl,
