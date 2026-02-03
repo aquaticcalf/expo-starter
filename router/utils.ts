@@ -39,7 +39,7 @@ export function getGroupName(segment: string): string {
  * exist only for layout organization, not navigation semantics.
  */
 export function convertFilePathToRoutePath(key: string): string {
-  const match = key.match(/pages\/(.*)\\.(jsx|tsx)$/)
+  const match = key.match(/^\.?\/pages\/(.*)\.(jsx|tsx)$/)
 
   if (!match) {
     throw new Error(`Invalid page path: ${key}. Expected format: pages/*.tsx`)
