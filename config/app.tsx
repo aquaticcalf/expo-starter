@@ -1,5 +1,10 @@
 import { FileSystemRouter } from "@/router"
+import { ThemeProvider } from "@/theme"
 
 export default function App() {
-  return <FileSystemRouter />
+  return (
+    <ThemeProvider>
+      <FileSystemRouter />
+    </ThemeProvider>
+  )
 }
