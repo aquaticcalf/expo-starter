@@ -256,8 +256,7 @@ export function normalizePath(path: string): string {
 }
 
 /**
- * Process glob results to separate pages, layouts, and 404s
- * Call this with: import.meta.glob with pattern for all tsx files in pages dir
+ * Process module imports to separate pages, layouts, and 404s
  */
 export function processPagesGlob(modules: Record<string, { default: ComponentType }>): {
   pages: Pages

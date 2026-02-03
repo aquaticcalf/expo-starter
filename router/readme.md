@@ -20,6 +20,7 @@ pages/
 - `index.tsx` → root of that directory
 - `[param].tsx` → dynamic segment, accessed via `useParams()`
 - `404.tsx` → custom not found page
+- `+layout.tsx` → layout wrapper for directory
 
 ## setup
 
@@ -50,11 +51,8 @@ export default function Home() {
 // app.tsx
 import { FileSystemRouter } from "@/router"
 
-// import all pages eagerly
-const pages = import.meta.glob("./pages/**/*.tsx", { eager: true })
-
 export default function App() {
-  return <FileSystemRouter pages={pages} />
+  return <FileSystemRouter />
 }
 ```
 
@@ -138,6 +136,27 @@ export default function UserProfile() {
   <Text>{user.name}</Text>
 </Link>
 ```
+
+## layouts
+
+layouts wrap pages and nested routes. create a `+layout.tsx` in any directory to apply a layout to all pages in that directory.
+
+```tsx
+// pages/+layout.tsx
+import { LayoutProps } from "@/router"
+
+export default function RootLayout({ children }: LayoutProps) {
+  return (
+    <View style={{ flex: 1 }}>
+      <Header />
+      {children}
+      <Footer />
+    </View>
+  )
+}
+```
+
+layouts are nested - child layouts wrap parent layouts.
 
 ## hooks
 
@@ -230,7 +249,7 @@ function CustomNotFound() {
   return <Text>Custom 404</Text>
 }
 
-<FileSystemRouter pages={pages} notFound={CustomNotFound} />
+<FileSystemRouter notFound={CustomNotFound} />
 ```
 
 ## initial path
@@ -238,18 +257,36 @@ function CustomNotFound() {
 set starting route (useful for deep linking):
 
 ```tsx
-<FileSystemRouter pages={pages} initialPath="/dashboard" />
+<FileSystemRouter initialPath="/dashboard" />
+```
+
+## advanced: manual page imports
+
+for custom setups, you can manually import and pass pages:
+
+```tsx
+import { FileSystemRouter } from "@/router"
+import HomePage from "./pages/index"
+import AboutPage from "./pages/about"
+
+const pages = {
+  "./pages/index.tsx": { default: HomePage },
+  "./pages/about.tsx": { default: AboutPage },
+}
+
+export default function App() {
+  return <FileSystemRouter pages={pages} />
+}
 ```
 
 ## api reference
 
 ### FileSystemRouter
 
-main component that renders routes.
+main component that renders routes. auto-discovers pages from `../pages/**/*.tsx`.
 
 | prop | type | default | description |
 |------|------|---------|-------------|
-| pages | `Record<string, PageModule>` | required | pages from `import.meta.glob` |
 | initialPath | `string` | `"/"` | starting route |
 | notFound | `ComponentType` | built-in | custom 404 component |
 

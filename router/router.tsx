@@ -1,17 +1,20 @@
-import { type ComponentType, useContext, useMemo } from "react"
+import { type ComponentType, useContext, useEffect, useMemo, useRef } from "react"
 import { StyleSheet, Text, View } from "react-native"
 import { RouterContext, RouterProvider } from "./context"
 import type {
   FileSystemRouterProps,
   Layout,
+  LayoutModule,
   Layouts,
   NotFoundComponent,
+  NotFoundModule,
   NotFounds,
+  PageModule,
   Pages,
   Route,
   RouteParams,
 } from "./types"
-import { buildRoutes, matchRoute, processPagesGlob } from "./utils"
+import { buildRoutes, is404Page, isLayoutFile, matchRoute } from "./utils"
 
 // rendering-hoist-jsx: extract static styles outside component
 const styles = StyleSheet.create({
@@ -29,6 +32,44 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 })
+
+/**
+ * Import all page modules using require.context
+ */
+const pagesContext = require.context("../pages", true, /\.tsx$/)
+
+/**
+ * Process the context modules into pages, layouts, and 404s
+ */
+function processContextImports(): {
+  pages: Pages
+  layouts: Layouts
+  notFounds: NotFounds
+} {
+  const pages: Pages = {}
+  const layouts: Layouts = {}
+  const notFounds: NotFounds = {}
+
+  pagesContext.keys().forEach((key) => {
+    // require.context returns keys like "./index.tsx", "./(tabs)/+layout.tsx"
+    // Convert to full path format: "./pages/index.tsx"
+    const fullKey = `./pages${key.slice(1)}`
+    const module = pagesContext(key) as { default: ComponentType }
+
+    if (isLayoutFile(fullKey)) {
+      layouts[fullKey] = module as LayoutModule
+    } else if (is404Page(fullKey)) {
+      notFounds[fullKey] = module as NotFoundModule
+    } else {
+      pages[fullKey] = module as PageModule
+    }
+  })
+
+  return { pages, layouts, notFounds }
+}
+
+// Pre-processed page modules - evaluated once at module load
+const { pages, layouts, notFounds } = processContextImports()
 
 /**
  * Default 404 component
@@ -98,15 +139,22 @@ function RouteRenderer({
   // rerender-derived-state-no-effect: derive match result during render
   const matchResult = useMemo(() => matchRoute(pathname, routes), [pathname, routes])
 
-  // rerender-derived-state-no-effect: compute params during render, not in effect
-  const currentParams: RouteParams = matchResult?.params ?? {}
+  // Update params when route changes (useEffect to avoid setState during render)
+  const prevMatchRef = useRef(matchResult)
+  const prevParamsRef = useRef<RouteParams>({})
+  useEffect(() => {
+    const currentParams = matchResult?.params ?? {}
+    const prevParams = prevParamsRef.current
+    const paramsChanged =
+      Object.keys(currentParams).length !== Object.keys(prevParams).length ||
+      Object.entries(currentParams).some(([key, val]) => prevParams[key] !== val)
 
-  // Only update context params when they actually change
-  // Use useMemo to detect changes and update synchronously during render
-  const paramsKey = JSON.stringify(currentParams)
-  useMemo(() => {
-    updateParams(currentParams)
-  }, [paramsKey, updateParams])
+    if (paramsChanged || prevMatchRef.current?.route !== matchResult?.route) {
+      prevParamsRef.current = currentParams
+      prevMatchRef.current = matchResult
+      updateParams(currentParams)
+    }
+  }, [matchResult, updateParams])
 
   if (!matchResult) {
     // No route matched - find most specific 404 for this path
@@ -131,28 +179,26 @@ function RouteRenderer({
 
 /**
  * File system router component
- * Provide either pagesDir (simple) OR pages/layouts (advanced)
+ * Automatically discovers and routes pages from the pages directory
  */
 export function FileSystemRouter(props: FileSystemRouterProps) {
   const { initialPath = "/", notFound } = props
 
-  // Build routes from either pagesDir or pages/layouts
+  // Extract explicit props for stable memoization - avoid depending on entire props object
+  const explicitPages = "pages" in props ? props.pages : undefined
+  const explicitLayouts = "pages" in props ? props.layouts : undefined
+  const explicitNotFounds = "pages" in props ? (props as { notFounds?: NotFounds }).notFounds : undefined
+
+  // Build routes from the pre-imported modules
   const { routes, rootNotFound } = useMemo(() => {
-    if ("pagesDir" in props) {
-      // Simple API: just provide the directory path
-      const globPattern = `${props.pagesDir}/**/*.tsx`
-      const modules = import.meta.glob<{ default: ComponentType }>(globPattern, { eager: true })
-      const { pages, layouts, notFounds } = processPagesGlob(modules)
-      return buildRoutes(pages, layouts, notFounds)
-    } else {
+    if (explicitPages) {
       // Advanced API: provide pre-loaded pages, layouts, and optional notFounds
-      return buildRoutes(
-        props.pages,
-        props.layouts ?? {},
-        (props as { notFounds?: NotFounds }).notFounds ?? {},
-      )
+      return buildRoutes(explicitPages, explicitLayouts ?? {}, explicitNotFounds ?? {})
+    } else {
+      // Simple API: use the context-imported modules
+      return buildRoutes(pages, layouts, notFounds)
     }
-  }, [props])
+  }, [explicitPages, explicitLayouts, explicitNotFounds])
 
   // Allow override via prop, otherwise use root 404 from pages/404.tsx, or default
   const finalRootNotFound = notFound ?? rootNotFound ?? DefaultNotFound

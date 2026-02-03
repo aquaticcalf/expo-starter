@@ -13,14 +13,14 @@ export interface LayoutProps {
 export type Layout = ComponentType<LayoutProps>
 
 /**
- * A page module imported via import.meta.glob or require.context
+ * A page module with default export
  */
 export interface PageModule {
   default: ComponentType
 }
 
 /**
- * A layout module imported via import.meta.glob
+ * A layout module with default export
  */
 export interface LayoutModule {
   default: Layout
@@ -32,7 +32,7 @@ export interface LayoutModule {
 export type NotFoundComponent = ComponentType
 
 /**
- * A 404 module imported via import.meta.glob
+ * A 404 module with default export
  */
 export interface NotFoundModule {
   default: NotFoundComponent
@@ -114,10 +114,10 @@ export interface RouterProviderProps {
 
 /**
  * FileSystemRouter component props
+ * Auto-discovers pages or accepts explicit pages/layouts/notFounds
  */
 export type FileSystemRouterProps =
   | {
-      pagesDir: string
       initialPath?: string
       notFound?: ComponentType
     }
