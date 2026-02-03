@@ -1,21 +1,17 @@
 /**
  * Pressable Component
  *
- * Animated pressable wrapper with scale and opacity feedback using Reanimated.
+ * Animated pressable wrapper with scale and opacity feedback using React Native's built-in Animated API.
  */
 
-import { memo, useCallback } from "react"
+import { memo, useCallback, useRef } from "react"
 import {
   Pressable as RNPressable,
+  Animated,
+  Easing,
   type PressableProps as RNPressableProps,
   type ViewStyle,
 } from "react-native"
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-} from "react-native-reanimated"
 import { useThemeValue } from "@/theme"
 
 // =============================================================================
@@ -30,12 +26,6 @@ export type PressableProps = Omit<RNPressableProps, "style"> & {
   style?: ViewStyle | ViewStyle[]
   children: React.ReactNode
 }
-
-// =============================================================================
-// ANIMATED PRESSABLE
-// =============================================================================
-
-const AnimatedPressable = Animated.createAnimatedComponent(RNPressable)
 
 // =============================================================================
 // COMPONENT
@@ -55,59 +45,70 @@ export const Pressable = memo(function Pressable({
   const theme = useThemeValue()
   const duration = animationDuration ?? theme.duration.fast
 
-  // Shared values for animation
-  const scale = useSharedValue(1)
-  const opacity = useSharedValue(1)
-
-  // Animated style
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
-  }))
+  // Animated values
+  const scaleAnim = useRef(new Animated.Value(1)).current
+  const opacityAnim = useRef(new Animated.Value(1)).current
 
   // Press handlers
   const handlePressIn = useCallback(
     (event: Parameters<NonNullable<RNPressableProps["onPressIn"]>>[0]) => {
-      scale.value = withTiming(scaleOnPress, {
-        duration,
-        easing: Easing.out(Easing.quad),
-      })
-      opacity.value = withTiming(opacityOnPress, {
-        duration,
-        easing: Easing.out(Easing.quad),
-      })
+      Animated.parallel([
+        Animated.timing(scaleAnim, {
+          toValue: scaleOnPress,
+          duration,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: opacityOnPress,
+          duration,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]).start()
       onPressIn?.(event)
     },
-    [scale, opacity, scaleOnPress, opacityOnPress, duration, onPressIn],
+    [scaleAnim, opacityAnim, scaleOnPress, opacityOnPress, duration, onPressIn],
   )
 
   const handlePressOut = useCallback(
     (event: Parameters<NonNullable<RNPressableProps["onPressOut"]>>[0]) => {
-      scale.value = withTiming(1, {
-        duration,
-        easing: Easing.out(Easing.quad),
-      })
-      opacity.value = withTiming(1, {
-        duration,
-        easing: Easing.out(Easing.quad),
-      })
+      Animated.parallel([
+        Animated.timing(scaleAnim, {
+          toValue: 1,
+          duration,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }),
+      ]).start()
       onPressOut?.(event)
     },
-    [scale, opacity, duration, onPressOut],
+    [scaleAnim, opacityAnim, duration, onPressOut],
   )
 
   // Flatten styles
   const flatStyles = Array.isArray(style) ? style : style ? [style] : []
 
+  // Animated style
+  const animatedStyle = {
+    transform: [{ scale: scaleAnim }],
+    opacity: opacityAnim,
+  }
+
   return (
-    <AnimatedPressable
+    <RNPressable
       disabled={disabled}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      style={[animatedStyle, ...flatStyles]}
       {...rest}
     >
-      {children}
-    </AnimatedPressable>
+      <Animated.View style={[animatedStyle, ...flatStyles]}>{children}</Animated.View>
+    </RNPressable>
   )
 })
