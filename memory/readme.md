@@ -1,6 +1,6 @@
 # @/memory
 
-Persistent key-value storage module built on [react-native-mmkv](https://github.com/mrousavy/react-native-mmkv). ~30x faster than AsyncStorage with full encryption support.
+Persistent key-value storage module built on [react-native-mmkv](https://github.com/mrousavy/react-native-mmkv). Provides synchronous storage with encryption support.
 
 ## Installation
 
@@ -309,21 +309,6 @@ const { getCached, setCached, invalidateByTag, cleanup, stats } = useCache<T>()
 - **iOS**: App Documents directory
 - **Android**: App files directory
 - **Web**: localStorage (with in-memory fallback if disabled)
-
-## Performance
-
-MMKV uses JSI (JavaScript Interface) for synchronous native method calls:
-
-- **No async/await overhead**
-- **No Bridge bottleneck**
-- **~30x faster than AsyncStorage**
-
-Benchmark (1000 reads on iPhone 11 Pro):
-
-| Storage | Time (ms) |
-|---------|-----------|
-| MMKV | ~1.5 |
-| AsyncStorage | ~45 |
 
 ## Module Structure
 
