@@ -5,6 +5,9 @@ import { normalizePath } from "./utils"
 // Maximum history length to prevent unbounded memory growth.
 const HISTORY_MAX_LENGTH = 100
 
+// Shared ref to track current route key across context and router
+export const currentRouteKeyRef = { current: "" }
+
 export const RouterContext = createContext<RouterContextValue | null>(null)
 
 export function RouterProvider({ children, initialPath = "/" }: RouterProviderProps) {
@@ -16,10 +19,14 @@ export function RouterProvider({ children, initialPath = "/" }: RouterProviderPr
   // This keeps navigation functions stable (no deps on mutable history).
   const historyRef = useRef<string[]>([normalizePath(initialPath)])
   const historyIndexRef = useRef(0)
+  const previousRouteKeyRef = useRef<string | null>(null)
 
   // Navigate to a new path. Optionally replace current history entry.
   const navigate = useCallback((path: string, options?: { replace?: boolean }) => {
     const normalizedPath = normalizePath(path)
+
+    // Track previous route key before navigation using shared ref
+    previousRouteKeyRef.current = currentRouteKeyRef.current
 
     if (options?.replace) {
       // Replace current entry without adding to history.
@@ -68,6 +75,7 @@ export function RouterProvider({ children, initialPath = "/" }: RouterProviderPr
       pathname,
       previousPathname:
         historyIndexRef.current > 0 ? historyRef.current[historyIndexRef.current - 1] : null,
+      previousRouteKey: previousRouteKeyRef.current,
       params,
       navigate,
       back,

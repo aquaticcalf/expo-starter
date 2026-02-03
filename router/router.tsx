@@ -1,5 +1,5 @@
 import { type ComponentType, useContext, useEffect, useMemo, useRef } from "react"
-import { RouterContext, RouterProvider } from "./context"
+import { RouterContext, RouterProvider, currentRouteKeyRef } from "./context"
 import { Flex, Text, Button } from "@/components"
 import { useNavigate } from "./hooks"
 import type {
@@ -108,6 +108,7 @@ function collectLayoutsForPath(targetPath: string, layoutMap: Map<string, Layout
 function findNotFoundForPath(
   pathname: string,
   referrer: string | null,
+  previousRouteKey: string | null,
   notFounds: NotFounds,
   layoutMap: Map<string, Layout>,
   parentNotFound?: NotFoundComponent,
@@ -140,29 +141,12 @@ function findNotFoundForPath(
     return { notFound: specific404, layouts }
   }
 
-  // No specific 404 for pathname, use referrer's section 404.
-  if (referrer) {
-    const referrerParts = referrer.split("/").filter(Boolean)
-    currentPath = "./pages"
-    let referrer404: NotFoundComponent | null = null
-    let referrer404Dir = ""
-
-    if (notFoundMap.has(currentPath)) {
-      referrer404 = notFoundMap.get(currentPath)!
-      referrer404Dir = ""
-    }
-
-    for (let i = 0; i < referrerParts.length; i++) {
-      currentPath += `/${referrerParts[i]}`
-      if (notFoundMap.has(currentPath)) {
-        referrer404 = notFoundMap.get(currentPath)!
-        referrer404Dir = currentPath.replace(/^\.\/pages/, "")
-      }
-    }
-
-    if (referrer404) {
-      const layouts = collectLayoutsForPath(referrer404Dir, layoutMap)
-      return { notFound: referrer404, layouts }
+  // Try to find referrer's 404 using the previous route key (e.g., ./pages/(tabs)/index.tsx)
+  if (previousRouteKey) {
+    const referrerDir = previousRouteKey.replace(/\/[^/]+\.(tsx|jsx)$/, "")
+    if (notFoundMap.has(referrerDir)) {
+      const layouts = collectLayoutsForPath(referrerDir.replace(/^\.\/pages/, ""), layoutMap)
+      return { notFound: notFoundMap.get(referrerDir)!, layouts }
     }
   }
 
@@ -202,7 +186,7 @@ function RouteRenderer({
     throw new Error("RouteRenderer must be used within RouterProvider.")
   }
 
-  const { pathname, previousPathname, updateParams } = context
+  const { pathname, previousPathname, previousRouteKey, updateParams } = context
 
   // Derive match result during render to avoid effect timing issues.
   const matchResult = useMemo(() => matchRoute(pathname, routes), [pathname, routes])
@@ -210,6 +194,11 @@ function RouteRenderer({
   // Track previous match to detect route changes.
   const prevMatchRef = useRef(matchResult)
   const prevParamsRef = useRef<RouteParams>({})
+
+  // Set current route key synchronously so it's available before navigation
+  if (matchResult?.route && currentRouteKeyRef.current !== matchResult.route.fileKey) {
+    currentRouteKeyRef.current = matchResult.route.fileKey
+  }
 
   // Update params when route changes.
   // Uses useEffect to avoid setState during render.
@@ -228,10 +217,12 @@ function RouteRenderer({
   }, [matchResult, updateParams])
 
   if (!matchResult) {
+
     // No route matched - find most specific 404 and its layouts for this path.
     const { notFound: NotFoundComponent, layouts } = findNotFoundForPath(
       pathname,
       previousPathname,
+      previousRouteKey,
       notFounds,
       layoutMap,
       parentNotFound,

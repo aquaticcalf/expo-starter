@@ -212,6 +212,7 @@ export function buildRoutes(
 
     routes.push({
       path,
+      fileKey: key,
       pattern,
       paramNames,
       component: module.default,

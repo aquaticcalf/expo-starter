@@ -66,6 +66,7 @@ export type RouteParams = Record<string, string>
  */
 export interface Route {
   path: string
+  fileKey: string
   pattern: RegExp
   paramNames: string[]
   component: ComponentType
@@ -98,6 +99,7 @@ export interface RouterInstance {
 export interface RouterContextValue {
   pathname: string
   previousPathname: string | null
+  previousRouteKey: string | null
   params: RouteParams
   navigate: (path: string, options?: NavigateOptions) => void
   back: () => void
