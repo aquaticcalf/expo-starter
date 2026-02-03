@@ -187,7 +187,8 @@ export function FileSystemRouter(props: FileSystemRouterProps) {
   // Extract explicit props for stable memoization - avoid depending on entire props object
   const explicitPages = "pages" in props ? props.pages : undefined
   const explicitLayouts = "pages" in props ? props.layouts : undefined
-  const explicitNotFounds = "pages" in props ? (props as { notFounds?: NotFounds }).notFounds : undefined
+  const explicitNotFounds =
+    "pages" in props ? (props as { notFounds?: NotFounds }).notFounds : undefined
 
   // Build routes from the pre-imported modules
   const { routes, rootNotFound } = useMemo(() => {
