@@ -11,10 +11,10 @@
 import { memo } from "react"
 import { View, StyleSheet } from "react-native"
 import { useThemeValue } from "@/theme"
-import { Pressable, type PressableProps } from "./pressable"
-import { Text } from "./text"
-import { Icon, type IconProps } from "./icon"
-import { Spinner } from "./spinner"
+import { Pressable, type PressableProps } from "../pressable/pressable"
+import { Text } from "../text/text"
+import { Icon, type IconProps } from "../icon/icon"
+import { Spinner } from "../spinner/spinner"
 
 // =============================================================================
 // TYPES

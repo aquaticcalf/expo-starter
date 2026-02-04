@@ -6,8 +6,9 @@
 
 import { memo, useState } from "react"
 import { View, Image, StyleSheet } from "react-native"
+import type { ViewStyle } from "react-native"
 import { useThemeValue } from "@/theme"
-import { Text } from "./text"
+import { Text } from "../text/text"
 
 // =============================================================================
 // TYPES
@@ -21,6 +22,7 @@ export type AvatarProps = {
   src?: string
   fallback?: string
   status?: AvatarStatus
+  style?: ViewStyle
 }
 
 // =============================================================================
@@ -46,7 +48,7 @@ const sizeConfig: Record<AvatarSize, SizeConfig> = {
 // COMPONENT
 // =============================================================================
 
-export const Avatar = memo(function Avatar({ size = "md", src, fallback, status }: AvatarProps) {
+export const Avatar = memo(function Avatar({ size = "md", src, fallback, status, style }: AvatarProps) {
   const theme = useThemeValue()
   const config = sizeConfig[size]
   const [imageError, setImageError] = useState(false)
@@ -62,7 +64,7 @@ export const Avatar = memo(function Avatar({ size = "md", src, fallback, status 
   }
 
   return (
-    <View style={[styles.container, containerStyle]}>
+    <View style={[styles.container, containerStyle, style]}>
       {showImage ? (
         <Image
           source={{ uri: src }}
