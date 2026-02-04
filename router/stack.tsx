@@ -104,7 +104,7 @@ export function Stack({
   }, [router])
 
   if (!headerShown) {
-    return <Box flex={1}>{children}</Box>
+    return <Box grow={1}>{children}</Box>
   }
 
   // rendering-conditional-render: use ternary not &&
@@ -125,7 +125,7 @@ export function Stack({
     ) : null
 
   return (
-    <Box flex={1}>
+    <Box grow={1}>
       <Flex
         direction="row"
         align="center"
@@ -137,14 +137,14 @@ export function Stack({
         <Box style={{ width: 60, alignItems: "flex-start", justifyContent: "center" }}>
           {headerLeftContent}
         </Box>
-        <Box flex={1} center>
+        <Box grow={1} center>
           {headerTitleContent}
         </Box>
         <Box style={{ width: 60, alignItems: "flex-end", justifyContent: "center" }}>
           {headerRight}
         </Box>
       </Flex>
-      <Box flex={1}>{children}</Box>
+      <Box grow={1}>{children}</Box>
     </Box>
   )
 }

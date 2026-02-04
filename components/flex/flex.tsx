@@ -63,7 +63,7 @@ export type FlexProps = ViewProps & {
   borderColor?: BorderColorToken
 
   // Layout
-  flex?: number
+  grow?: number
   children?: React.ReactNode
 }
 
@@ -141,7 +141,7 @@ export const Flex = memo(function Flex({
   borderWidth,
   borderColor,
   // Layout
-  flex,
+  grow,
   // Rest
   style,
   children,
@@ -191,7 +191,7 @@ export const Flex = memo(function Flex({
     // Shadow
     ...(shadow ? theme.shadows[shadow] : {}),
     // Layout
-    flex,
+    grow,
   }
 
   return (

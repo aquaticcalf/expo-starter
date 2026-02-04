@@ -45,7 +45,10 @@ const TabButton = memo(function TabButton({
   const textColor = active ? theme.colors.brand.default : theme.colors.foreground.default
 
   return (
-    <Pressable onPress={onPress} style={{ flexGrow: 1, alignItems: "center", justifyContent: "center", paddingVertical: 8 }}>
+    <Pressable
+      onPress={onPress}
+      style={{ flexGrow: 1, alignItems: "center", justifyContent: "center", paddingVertical: 8 }}
+    >
       {icon}
       <Text
         variant="caption"
@@ -107,8 +110,8 @@ export function Tabs({ tabs, children }: TabsProps) {
   )
 
   return (
-    <Box flex={1}>
-      <Box flex={1}>{children}</Box>
+    <Box grow={1}>
+      <Box grow={1}>{children}</Box>
       <Flex
         direction="row"
         justify="around"

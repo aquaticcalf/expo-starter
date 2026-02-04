@@ -48,7 +48,13 @@ const sizeConfig: Record<AvatarSize, SizeConfig> = {
 // COMPONENT
 // =============================================================================
 
-export const Avatar = memo(function Avatar({ size = "md", src, fallback, status, style }: AvatarProps) {
+export const Avatar = memo(function Avatar({
+  size = "md",
+  src,
+  fallback,
+  status,
+  style,
+}: AvatarProps) {
   const theme = useThemeValue()
   const config = sizeConfig[size]
   const [imageError, setImageError] = useState(false)
