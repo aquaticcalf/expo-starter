@@ -53,7 +53,7 @@ export type BoxProps = ViewProps & {
   borderColor?: BorderColorToken
 
   // Layout props - common flexbox shortcuts.
-  flex?: number
+  grow?: number
   row?: boolean
   center?: boolean
   children?: React.ReactNode
@@ -91,7 +91,7 @@ export const Box = memo(function Box({
   borderWidth,
   borderColor,
   // Layout.
-  flex,
+  grow,
   row,
   center,
   // Rest.
@@ -142,7 +142,7 @@ export const Box = memo(function Box({
     // Shadow (spread operator merges shadow definition).
     ...(shadow ? theme.shadows[shadow] : {}),
     // Layout.
-    flex,
+    grow,
     flexDirection: row ? ("row" as const) : undefined,
     alignItems: center ? ("center" as const) : undefined,
     justifyContent: center ? ("center" as const) : undefined,

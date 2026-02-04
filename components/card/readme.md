@@ -10,9 +10,9 @@ Surface container with variants for elevated, outlined, and filled styles.
 | p         | `SpacingToken` \| `number`        | `4`        | padding (all sides)                  |
 | px        | `SpacingToken` \| `number`        | -          | padding horizontal                   |
 | py        | `SpacingToken` \| `number`        | -          | padding vertical                     |
-| radius    | `RadiusToken`                     | `lg`       | border radius                        |
-| children  | `ReactNode`                       | -          | card content                         |
-| style     | `ViewStyle`                       | -          | additional styles (highest priority) |
+| radius        | `RadiusToken`                     | `lg`       | border radius                                |
+| children      | `ReactNode`                       | -          | card content                                 |
+| style         | `ViewStyle`                       | -          | additional styles (highest priority) |
 
 ## usage
 

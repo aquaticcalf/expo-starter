@@ -65,7 +65,7 @@ function DefaultNotFound() {
   const navigate = useNavigate()
 
   return (
-    <Flex flex={1} align="center" justify="center" gap={20}>
+    <Flex grow={1} align="center" justify="center" gap={20}>
       <Flex align="center" gap={2}>
         <Text variant="headline" color="default">
           404
@@ -217,7 +217,6 @@ function RouteRenderer({
   }, [matchResult, updateParams])
 
   if (!matchResult) {
-
     // No route matched - find most specific 404 and its layouts for this path.
     const { notFound: NotFoundComponent, layouts } = findNotFoundForPath(
       pathname,
