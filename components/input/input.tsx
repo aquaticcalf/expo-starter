@@ -7,9 +7,9 @@
 import { memo, useState, useCallback } from "react"
 import { TextInput, View, StyleSheet, type TextInputProps } from "react-native"
 import { useThemeValue } from "@/theme"
-import { Text } from "./text"
-import { Icon, type IconProps } from "./icon"
-import { Pressable } from "./pressable"
+import { Text } from "../text/text"
+import { Icon, type IconProps } from "../icon/icon"
+import { Pressable } from "../pressable/pressable"
 
 // =============================================================================
 // TYPES

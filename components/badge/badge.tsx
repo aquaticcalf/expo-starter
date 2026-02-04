@@ -5,9 +5,9 @@
  */
 
 import { memo } from "react"
-import { View, StyleSheet } from "react-native"
+import { View, StyleSheet, type ViewStyle } from "react-native"
 import { useThemeValue } from "@/theme"
-import { Text } from "./text"
+import { Text } from "../text/text"
 
 // =============================================================================
 // TYPES
@@ -22,6 +22,7 @@ export type BadgeProps = {
   size?: BadgeSize
   variant?: BadgeVariant
   children: React.ReactNode
+  style?: ViewStyle
 }
 
 // =============================================================================
@@ -49,6 +50,7 @@ export const Badge = memo(function Badge({
   size = "md",
   variant = "subtle",
   children,
+  style,
 }: BadgeProps) {
   const theme = useThemeValue()
   const config = sizeConfig[size]
@@ -66,7 +68,7 @@ export const Badge = memo(function Badge({
   }
 
   return (
-    <View style={[styles.badge, badgeStyle]}>
+    <View style={[styles.badge, badgeStyle, style]}>
       <Text variant={config.fontSize} weight="medium" color={getTextColor(variant, colorScheme)}>
         {children}
       </Text>
