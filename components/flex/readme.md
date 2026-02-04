@@ -32,7 +32,6 @@ Flexbox layout primitive with direction, alignment, and distribution controls.
 | shadow        | `ShadowToken`                     | -          | shadow level                        |
 | borderWidth   | `number`                           | -          | border width                         |
 | borderColor   | `BorderColorToken`                | -          | border color                         |
-| flex          | `number`                           | -          | ~~flex grow factor~~ (use `grow` instead)     |
 | grow          | `number`                           | -          | flex grow factor                              |
 | children      | `ReactNode`                        | -          | children nodes                                |
 | style         | `ViewStyle`                        | -          | additional styles (highest priority)          |

@@ -28,7 +28,6 @@ Generic View wrapper with theme-aware styling via shorthand props.
 | shadow        | `ShadowToken`                    | -       | shadow level                                 |
 | borderWidth   | `number`                         | -       | border width                                 |
 | borderColor   | `BorderColorToken`               | -       | border color                                 |
-| flex          | `number`                         | -       | ~~flex grow factor~~ (use `grow` instead)     |
 | grow          | `number`                         | -       | flex grow factor                              |
 | row           | `boolean`                        | -       | use row flex direction                        |
 | center        | `boolean`                        | -       | center content                               |
